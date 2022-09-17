@@ -141,9 +141,10 @@ class AshevilleScraper(IngestionModelScraper):
 
             event_link = event_link_elm["href"]
             event_date_str = event_link.rsplit("/", 2)[-2]
-            event_date_str = event_date_str.replace("-", " ")
+            event_date_str = event_date_str.replace("-", " ").capitalize()
             event_date = datetime.strptime(event_date_str, "%B %d %Y")
-            # print(event_date)
+            print(event_date_str)
+            print(event_date)
 
             # If the event date is out of range, continue
             if not (start_date_time < event_date < end_date_time):
@@ -372,9 +373,9 @@ def get_events(
 
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
-# dev = True
+dev = True
 if dev:
-    start_date_time = datetime(2021, 6, 15)
+    start_date_time = datetime(2021, 8, 1)
     end_date_time = datetime(2021, 8, 31)
 
     scraper = AshevilleScraper()
