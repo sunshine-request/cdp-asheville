@@ -108,13 +108,15 @@ class AshevilleScraper(IngestionModelScraper):
         sessions: List[Session] = []
         session_index = 0
 
+        # Note: It looks like the shortened URL video links cause a validation error
+        # when adding to firestore. Should open an issue on cdp-backend
         for session_video_link in event_page.find_all("a"):
             sessions.append(
                 self.get_none_if_empty(
                     Session(
                         session_datetime=self.localize_datetime(event_date),
                         session_index=session_index,
-                        video_uri="https://www.youtube.com/watch?v=99EuRR17Vy4",
+                        video_uri=session_video_link["href"].replace("https://youtu.be/", "https://www.youtube.com/watch?v="),
                     )
                 )
             )
@@ -171,11 +173,11 @@ class AshevilleScraper(IngestionModelScraper):
             events.append(
                 self.get_none_if_empty(
                     EventIngestionModel(
-                        # agenda_uri=self.get_agenda_uri(event_card),
+                        agenda_uri=self.get_agenda_uri(event_card),
                         body=Body(name="Asheville City Council"),
                         # event_minutes_items=self.get_event_minutes(event_page.soup),
                         # minutes_uri=None,
-                        # minutes_uri=self.get_minutes_uri(event_card),
+                        minutes_uri=self.get_minutes_uri(event_card),
                         sessions=self.get_sessions(video_container, event_date),
                     )
                 )
