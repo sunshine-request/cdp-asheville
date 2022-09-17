@@ -300,7 +300,7 @@ class AshevilleScraper(IngestionModelScraper):
 
 
     def get_events(
-        self: any, #PRC - why do i need this? 
+        self: any, # PRC - why do i need this? 
         from_dt: datetime,
         to_dt: datetime,
         **kwargs,
@@ -375,7 +375,7 @@ def get_events(
 
 
 dev = False
-## FOR DEV, Uncomment line below, then run python scraper.py
+# FOR DEV, Uncomment line below, then run python scraper.py
 # dev = True
 if(dev):
     start_date_time = datetime(2021, 6, 15)
