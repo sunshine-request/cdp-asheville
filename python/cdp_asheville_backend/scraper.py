@@ -215,9 +215,11 @@ class AshevilleScraper(IngestionModelScraper):
         # Get all months between start and end date
         dates = [
             dt for dt in 
-            rrule(MONTHLY,
+            rrule(
+                MONTHLY,
                 dtstart=start_date_time, 
-                until=end_date_time)
+                until=end_date_time
+            )
         ]
 
         events = []
