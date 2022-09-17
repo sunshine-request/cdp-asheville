@@ -171,11 +171,11 @@ class AshevilleScraper(IngestionModelScraper):
             events.append(
                 self.get_none_if_empty(
                     EventIngestionModel(
-                        agenda_uri=self.get_agenda_uri(event_card),
+                        # agenda_uri=self.get_agenda_uri(event_card),
                         body=Body(name="Asheville City Council"),
                         # event_minutes_items=self.get_event_minutes(event_page.soup),
                         # minutes_uri=None,
-                        minutes_uri=self.get_minutes_uri(event_card),
+                        # minutes_uri=self.get_minutes_uri(event_card),
                         sessions=self.get_sessions(video_container, event_date),
                     )
                 )
