@@ -250,7 +250,7 @@ class AshevilleScraper(IngestionModelScraper):
         agenda_uri_element = event_page.find("a", text=re.compile("Action Agenda"))
 
         if agenda_uri_element is not None:
-            return agenda_uri_element["href"]
+            return agenda_uri_element["href"].replace("?usp=sharing", "")
         return None
 
     def get_minutes_uri(self, event_page: BeautifulSoup) -> Optional[str]:
@@ -271,7 +271,7 @@ class AshevilleScraper(IngestionModelScraper):
         agenda_uri_element = event_page.find("a", text=re.compile("Minutes"))
 
         if agenda_uri_element is not None:
-            return agenda_uri_element["href"]
+            return agenda_uri_element["href"].replace("?usp=sharing", "")
         return None
 
     def load_council_meeting_materials_page(
