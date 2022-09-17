@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+
 # from typing import List
 
 # from cdp_backend.pipeline.ingestion_models import EventIngestionModel
@@ -35,6 +36,7 @@ log = logging.getLogger(__name__)
 
 ###############################################################################
 import re
+
 # from typing import Any, List, NamedTuple, Optional, Union
 from typing import List, NamedTuple, Optional, Union
 from bs4 import BeautifulSoup
@@ -70,6 +72,7 @@ def load_web_page(url: Union[str, Request]) -> WebPageSoup:
 
     return WebPageSoup(False)
 
+
 ###############################################################################
 
 
@@ -78,9 +81,7 @@ class AshevilleScraper(IngestionModelScraper):
         super().__init__(timezone="America/New_York")
 
     def get_sessions(
-        self, 
-        event_page: BeautifulSoup, 
-        event_date: datetime
+        self, event_page: BeautifulSoup, event_date: datetime
     ) -> Optional[List[Session]]:
         """
         Parse meeting video URIs from event_page,
@@ -111,11 +112,9 @@ class AshevilleScraper(IngestionModelScraper):
             sessions.append(
                 self.get_none_if_empty(
                     Session(
-                        session_datetime=self.localize_datetime(
-                            event_date
-                        ),
+                        session_datetime=self.localize_datetime(event_date),
                         session_index=session_index,
-                        video_uri=session_video_link['href'],
+                        video_uri=session_video_link["href"],
                     )
                 )
             )
@@ -125,28 +124,24 @@ class AshevilleScraper(IngestionModelScraper):
         return reduced_list(sessions)
 
     def get_events_for_month_article(
-            self, 
-            soup_article: BeautifulSoup, 
-            start_date_time: datetime, 
-            end_date_time: datetime
+        self,
+        soup_article: BeautifulSoup,
+        start_date_time: datetime,
+        end_date_time: datetime,
     ) -> Optional[List[EventIngestionModel]]:
 
         # print("Events for month")
 
-        event_headers = soup_article.find_all(
-            "h4"
-        )
+        event_headers = soup_article.find_all("h4")
 
         events: List[EventIngestionModel] = []
 
         for event_header in event_headers:
-            event_link_elm = event_header.find(
-                'a'
-            )
+            event_link_elm = event_header.find("a")
 
-            event_link = event_link_elm['href']
-            event_date_str = event_link.rsplit('/', 2)[-2]
-            event_date_str = event_date_str.replace('-', ' ')
+            event_link = event_link_elm["href"]
+            event_date_str = event_link.rsplit("/", 2)[-2]
+            event_date_str = event_date_str.replace("-", " ")
             event_date = datetime.strptime(event_date_str, "%B %d %Y")
             # print(event_date)
 
@@ -154,16 +149,12 @@ class AshevilleScraper(IngestionModelScraper):
             if not (start_date_time < event_date < end_date_time):
                 continue
 
-            event_card = event_header.find_parent(
-                'div', attrs={"class": "card"}
-            )
+            event_card = event_header.find_parent("div", attrs={"class": "card"})
 
-            video_header = event_card.find(
-                'h5', text=re.compile("Videos")
-            )
+            video_header = event_card.find("h5", text=re.compile("Videos"))
 
             video_container = video_header.find_parent(
-                'div', attrs={"class": "container"}
+                "div", attrs={"class": "container"}
             )
 
             # video_links = video_container.find_all(
@@ -192,10 +183,10 @@ class AshevilleScraper(IngestionModelScraper):
         return reduced_list(events)
 
     def get_event(
-            self, 
-            event_page: BeautifulSoup,
-            start_date_time: datetime, 
-            end_date_time: datetime
+        self,
+        event_page: BeautifulSoup,
+        start_date_time: datetime,
+        end_date_time: datetime,
     ) -> Optional[EventIngestionModel]:
         """
         Find the uri for the file containing the agenda for a Portland, OR city
@@ -214,12 +205,7 @@ class AshevilleScraper(IngestionModelScraper):
 
         # Get all months between start and end date
         dates = [
-            dt for dt in 
-            rrule(
-                MONTHLY,
-                dtstart=start_date_time, 
-                until=end_date_time
-            )
+            dt for dt in rrule(MONTHLY, dtstart=start_date_time, until=end_date_time)
         ]
 
         events = []
@@ -227,23 +213,17 @@ class AshevilleScraper(IngestionModelScraper):
             month_date_formatted = month_date.strftime("%B, %Y")
             # print(month_date_formatted)
 
-            month_element = event_page.find(
-                "h3", text=re.compile(month_date_formatted)
-            )
+            month_element = event_page.find("h3", text=re.compile(month_date_formatted))
 
-            month_parent_element = month_element.find_parent(
-                "article"
-            )
+            month_parent_element = month_element.find_parent("article")
 
             events += self.get_events_for_month_article(
-                month_parent_element, start_date_time, end_date_time)
+                month_parent_element, start_date_time, end_date_time
+            )
 
         return events
 
-    def get_agenda_uri(
-        self, 
-        event_page: BeautifulSoup
-    ) -> Optional[str]:
+    def get_agenda_uri(self, event_page: BeautifulSoup) -> Optional[str]:
         """
         Find the uri for the file containing the agenda for a Portland, OR city
         council meeting
@@ -258,18 +238,13 @@ class AshevilleScraper(IngestionModelScraper):
         agenda_uri: Optional[str]
             The uri for the file containing the meeting's agenda
         """
-        agenda_uri_element = event_page.find(
-            "a", text=re.compile("Action Agenda")
-        )
+        agenda_uri_element = event_page.find("a", text=re.compile("Action Agenda"))
 
         if agenda_uri_element is not None:
-            return agenda_uri_element['href']
+            return agenda_uri_element["href"]
         return None
 
-    def get_minutes_uri(
-        self, 
-        event_page: BeautifulSoup
-    ) -> Optional[str]:
+    def get_minutes_uri(self, event_page: BeautifulSoup) -> Optional[str]:
         """
         Find the uri for the file containing the agenda for a Portland, OR city
         council meeting
@@ -284,18 +259,14 @@ class AshevilleScraper(IngestionModelScraper):
         agenda_uri: Optional[str]
             The uri for the file containing the meeting's agenda
         """
-        agenda_uri_element = event_page.find(
-            "a", text=re.compile("Minutes")
-        )
+        agenda_uri_element = event_page.find("a", text=re.compile("Minutes"))
 
         if agenda_uri_element is not None:
-            return agenda_uri_element['href']
+            return agenda_uri_element["href"]
         return None
 
     def load_council_meeting_materials_page(
-            self, 
-            start_date_time: datetime, 
-            end_date_time: datetime
+        self, start_date_time: datetime, end_date_time: datetime
     ) -> Optional[EventIngestionModel]:
         """
         Portland, OR city council meeting information for a specific date
@@ -323,7 +294,7 @@ class AshevilleScraper(IngestionModelScraper):
         return self.get_event(event_page.soup, start_date_time, end_date_time)
 
     def get_events(
-        self, 
+        self,
         from_dt: datetime,
         to_dt: datetime,
         **kwargs,
@@ -345,8 +316,8 @@ class AshevilleScraper(IngestionModelScraper):
 
         Notes
         -----
-        As the implimenter of the get_events function, you can choose 
-        to ignore the from_dt and to_dt parameters. 
+        As the implimenter of the get_events function, you can choose
+        to ignore the from_dt and to_dt parameters.
         However, they are useful for manually kicking off pipelines
         from GitHub Actions UI.
         """
@@ -358,6 +329,7 @@ class AshevilleScraper(IngestionModelScraper):
 
         # print(events)
         return events
+
 
 ####
 
@@ -384,8 +356,8 @@ def get_events(
 
     Notes
     -----
-    As the implimenter of the get_events function, you can choose 
-    to ignore the from_dt and to_dt parameters. 
+    As the implimenter of the get_events function, you can choose
+    to ignore the from_dt and to_dt parameters.
     However, they are useful for manually kicking off pipelines
     from GitHub Actions UI.
     """
@@ -398,7 +370,7 @@ def get_events(
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
 # dev = True
-if dev: 
+if dev:
     start_date_time = datetime(2021, 6, 15)
     end_date_time = datetime(2021, 8, 31)
 
