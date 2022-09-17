@@ -236,7 +236,10 @@ class AshevilleScraper(IngestionModelScraper):
 
         return events
 
-    def get_agenda_uri(self, event_page: BeautifulSoup) -> Optional[str]:
+    def get_agenda_uri(
+        self, 
+        event_page: BeautifulSoup
+    ) -> Optional[str]:
         """
         Find the uri for the file containing the agenda for a Portland, OR city
         council meeting
@@ -259,7 +262,10 @@ class AshevilleScraper(IngestionModelScraper):
             return agenda_uri_element['href']
         return None
 
-    def get_minutes_uri(self, event_page: BeautifulSoup) -> Optional[str]:
+    def get_minutes_uri(
+        self, 
+        event_page: BeautifulSoup
+    ) -> Optional[str]:
         """
         Find the uri for the file containing the agenda for a Portland, OR city
         council meeting
