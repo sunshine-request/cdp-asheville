@@ -80,6 +80,11 @@ class AshevilleScraper(IngestionModelScraper):
     def __init__(self):
         super().__init__(timezone="America/New_York")
 
+    def process_drive_link(self, input: str) -> str:
+        # https://drive.google.com/file/d/1CgJk-55n1ujfYc8-F1U-Rw7YwUdtdZ4P/view
+        # https://drive.google.com/uc?export=download&id=1CgJk-55n1ujfYc8-F1U-Rw7YwUdtdZ4P
+        return input.replace("/view", "").replace("file/d/", "uc?export=download&id=")
+
     def get_sessions(
         self, event_page: BeautifulSoup, event_date: datetime
     ) -> Optional[List[Session]]:
@@ -175,11 +180,15 @@ class AshevilleScraper(IngestionModelScraper):
             events.append(
                 self.get_none_if_empty(
                     EventIngestionModel(
-                        agenda_uri=self.get_agenda_uri(event_card),
+                        agenda_uri=self.process_drive_link(
+                            self.get_agenda_uri(event_card)
+                        ),
                         body=Body(name="Asheville City Council"),
                         # event_minutes_items=self.get_event_minutes(event_page.soup),
                         # minutes_uri=None,
-                        minutes_uri=self.get_minutes_uri(event_card),
+                        minutes_uri=self.process_drive_link(
+                            self.get_minutes_uri(event_card)
+                        ),
                         sessions=self.get_sessions(video_container, event_date),
                     )
                 )
@@ -377,7 +386,7 @@ def get_events(
 
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
-dev = True
+# dev = True
 if dev:
     start_date_time = datetime(2021, 8, 1)
     end_date_time = datetime(2021, 8, 31)
