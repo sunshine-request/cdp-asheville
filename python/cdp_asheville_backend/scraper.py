@@ -390,7 +390,7 @@ def get_events(
 
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
-dev = True
+# dev = True
 if dev:
     start_date_time = datetime(2021, 8, 1)
     end_date_time = datetime(2021, 8, 31)
