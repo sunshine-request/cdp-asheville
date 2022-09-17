@@ -116,7 +116,9 @@ class AshevilleScraper(IngestionModelScraper):
                     Session(
                         session_datetime=self.localize_datetime(event_date),
                         session_index=session_index,
-                        video_uri=session_video_link["href"].replace("https://youtu.be/", "https://www.youtube.com/watch?v="),
+                        video_uri=session_video_link["href"].replace("https://youtu.be/", 
+                            "https://www.youtube.com/watch?v="
+                        ),
                     )
                 )
             )
