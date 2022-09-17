@@ -77,7 +77,11 @@ class AshevilleScraper(IngestionModelScraper):
     def __init__(self):
         super().__init__(timezone="America/New_York")
 
-    def get_sessions(self, event_page: BeautifulSoup, event_date: datetime) -> Optional[List[Session]]:
+    def get_sessions(
+        self, 
+        event_page: BeautifulSoup, 
+        event_date: datetime
+    ) -> Optional[List[Session]]:
         """
         Parse meeting video URIs from event_page,
         return Session for each video found.
@@ -124,8 +128,8 @@ class AshevilleScraper(IngestionModelScraper):
             self, 
             soup_article: BeautifulSoup, 
             start_date_time: datetime, 
-            end_date_time: datetime) 
-            -> Optional[List[EventIngestionModel]]:
+            end_date_time: datetime
+    ) -> Optional[List[EventIngestionModel]]:
 
         # print("Events for month")
 
@@ -191,8 +195,8 @@ class AshevilleScraper(IngestionModelScraper):
             self, 
             event_page: BeautifulSoup,
             start_date_time: datetime, 
-            end_date_time: datetime)
-            -> Optional[EventIngestionModel]:
+            end_date_time: datetime
+    ) -> Optional[EventIngestionModel]:
         """
         Find the uri for the file containing the agenda for a Portland, OR city
         council meeting
@@ -281,8 +285,8 @@ class AshevilleScraper(IngestionModelScraper):
     def load_council_meeting_materials_page(
             self, 
             start_date_time: datetime, 
-            end_date_time: datetime) 
-            -> Optional[EventIngestionModel]:
+            end_date_time: datetime
+    ) -> Optional[EventIngestionModel]:
         """
         Portland, OR city council meeting information for a specific date
 
