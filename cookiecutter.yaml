@@ -1,0 +1,15 @@
+default_context:
+    municipality: "Asheville"
+    iana_timezone: "America/New_York"
+    governing_body_type: "city council"
+    municipality_slug: "asheville"
+    python_municipality_slug: "asheville"
+    infrastructure_slug: "cdp-asheville-ektqmrjs"
+    maintainer_or_org_full_name: "Sunshine Request"
+    hosting_github_username_or_org: "sunshine-request"
+    hosting_github_repo_name: "cdp-asheville"
+    hosting_github_url: "https://github.com/sunshine-request/cdp-asheville"
+    hosting_web_app_address: "https://sunshine-request.github.io/cdp-asheville"
+    firestore_region: "us-east1"
+    event_gather_timedelta_lookback_days: 2
+    event_gather_cron: "26 0,6,12,18 * * *"

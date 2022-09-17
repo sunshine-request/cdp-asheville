@@ -1,0 +1,49 @@
+name: Check Pull Request
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build-python:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: '3.10'
+
+    - name: Install Packages
+      run: |
+        sudo apt update
+        sudo apt-get install ffmpeg --fix-missing
+
+    - name: Install Python Dependencies
+      run: |
+        cd python/
+        pip install .[test]
+    - name: Lint and Format Python
+      run: |
+        cd python/
+        flake8 cdp_asheville_backend --count --verbose --show-source --statistics
+        black --check cdp_asheville_backend
+  
+  build-web:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-node@v1
+      with:
+        node-version: '16.x'
+
+    - name: Install Web App Dependencies
+      run: |
+        cd web/
+        npm i
+    - name: Build Web App
+      run: |
+        cd web/
+        npm run build
