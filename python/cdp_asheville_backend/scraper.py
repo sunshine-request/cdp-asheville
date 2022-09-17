@@ -4,7 +4,7 @@
 from datetime import datetime
 from typing import List
 
-from cdp_backend.pipeline.ingestion_models import EventIngestionModel
+# from cdp_backend.pipeline.ingestion_models import EventIngestionModel
 
 ###############################################################################
 from dateutil.rrule import rrule, MONTHLY
