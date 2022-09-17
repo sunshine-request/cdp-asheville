@@ -184,15 +184,11 @@ class AshevilleScraper(IngestionModelScraper):
             events.append(
                 self.get_none_if_empty(
                     EventIngestionModel(
-                        agenda_uri=self.process_drive_link(
-                            self.get_agenda_uri(event_card)
-                        ),
+                        agenda_uri=self.get_agenda_uri(event_card),
                         body=Body(name="Asheville City Council"),
                         # event_minutes_items=self.get_event_minutes(event_page.soup),
                         # minutes_uri=None,
-                        minutes_uri=self.process_drive_link(
-                            self.get_minutes_uri(event_card)
-                        ),
+                        minutes_uri=self.get_minutes_uri(event_card),
                         sessions=self.get_sessions(video_container, event_date),
                     )
                 )
@@ -236,10 +232,7 @@ class AshevilleScraper(IngestionModelScraper):
             month_parent_element = month_element.find_parent("article")
 
             new_events = self.get_events_for_month_article(
-                month_parent_element, 
-                start_date_time, 
-                end_date_time,
-                month_date
+                month_parent_element, start_date_time, end_date_time, month_date
             )
 
             if new_events is not None:
@@ -265,7 +258,9 @@ class AshevilleScraper(IngestionModelScraper):
         agenda_uri_element = event_page.find("a", text=re.compile("Action Agenda"))
 
         if agenda_uri_element is not None:
-            return agenda_uri_element["href"].replace("?usp=sharing", "")
+            return self.process_drive_link(
+                agenda_uri_element["href"].replace("?usp=sharing", "")
+            )
         return None
 
     def get_minutes_uri(self, event_page: BeautifulSoup) -> Optional[str]:
@@ -286,7 +281,9 @@ class AshevilleScraper(IngestionModelScraper):
         agenda_uri_element = event_page.find("a", text=re.compile("Minutes"))
 
         if agenda_uri_element is not None:
-            return agenda_uri_element["href"].replace("?usp=sharing", "")
+            return self.process_drive_link(
+                agenda_uri_element["href"].replace("?usp=sharing", "")
+            )
         return None
 
     def load_council_meeting_materials_page(
