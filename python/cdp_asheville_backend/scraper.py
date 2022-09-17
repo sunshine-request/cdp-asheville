@@ -120,9 +120,13 @@ class AshevilleScraper(IngestionModelScraper):
 
         return reduced_list(sessions)
 
-    def get_events_for_month_article(self, soup_article: BeautifulSoup, \
-        start_date_time: datetime, end_date_time: datetime) \
-        -> Optional[List[EventIngestionModel]]:
+    def get_events_for_month_article(
+            self, 
+            soup_article: BeautifulSoup, 
+            start_date_time: datetime, 
+            end_date_time: datetime) 
+            -> Optional[List[EventIngestionModel]]:
+
         # print("Events for month")
 
         event_headers = soup_article.find_all(
@@ -183,9 +187,12 @@ class AshevilleScraper(IngestionModelScraper):
 
         return reduced_list(events)
 
-    def get_event(self, event_page: BeautifulSoup, \
-        start_date_time: datetime, end_date_time: datetime) \
-        -> Optional[EventIngestionModel]:
+    def get_event(
+            self, 
+            event_page: BeautifulSoup,
+            start_date_time: datetime, 
+            end_date_time: datetime)
+            -> Optional[EventIngestionModel]:
         """
         Find the uri for the file containing the agenda for a Portland, OR city
         council meeting
@@ -202,8 +209,10 @@ class AshevilleScraper(IngestionModelScraper):
         """
 
         # Get all months between start and end date
-        dates = [dt for dt in rrule(MONTHLY, \
-            dtstart=start_date_time, until=end_date_time)]
+        dates = [dt for dt in 
+                rrule(MONTHLY,
+                dtstart=start_date_time, 
+                until=end_date_time)]
 
         events = []
         for month_date in dates:
@@ -269,7 +278,11 @@ class AshevilleScraper(IngestionModelScraper):
             return agenda_uri_element['href']
         return None
 
-    def load_council_meeting_materials_page(self, start_date_time: datetime, end_date_time: datetime) -> Optional[EventIngestionModel]:
+    def load_council_meeting_materials_page(
+            self, 
+            start_date_time: datetime, 
+            end_date_time: datetime) 
+            -> Optional[EventIngestionModel]:
         """
         Portland, OR city council meeting information for a specific date
 
@@ -296,7 +309,7 @@ class AshevilleScraper(IngestionModelScraper):
         return self.get_event(event_page.soup, start_date_time, end_date_time)
 
     def get_events(
-        self: any, # PRC - why do i need this? 
+        self, 
         from_dt: datetime,
         to_dt: datetime,
         **kwargs,
@@ -318,8 +331,9 @@ class AshevilleScraper(IngestionModelScraper):
 
         Notes
         -----
-        As the implimenter of the get_events function, you can choose to ignore the from_dt
-        and to_dt parameters. However, they are useful for manually kicking off pipelines
+        As the implimenter of the get_events function, you can choose 
+        to ignore the from_dt and to_dt parameters. 
+        However, they are useful for manually kicking off pipelines
         from GitHub Actions UI.
         """
 
@@ -356,8 +370,9 @@ def get_events(
 
     Notes
     -----
-    As the implimenter of the get_events function, you can choose to ignore the from_dt
-    and to_dt parameters. However, they are useful for manually kicking off pipelines
+    As the implimenter of the get_events function, you can choose 
+    to ignore the from_dt and to_dt parameters. 
+    However, they are useful for manually kicking off pipelines
     from GitHub Actions UI.
     """
 
