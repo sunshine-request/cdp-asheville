@@ -137,6 +137,7 @@ class AshevilleScraper(IngestionModelScraper):
         soup_article: BeautifulSoup,
         start_date_time: datetime,
         end_date_time: datetime,
+        month_date: datetime,
     ) -> Optional[List[EventIngestionModel]]:
 
         # print("Events for month")
@@ -148,12 +149,15 @@ class AshevilleScraper(IngestionModelScraper):
         for event_header in event_headers:
             event_link_elm = event_header.find("a")
 
-            event_link = event_link_elm["href"]
-            event_date_str = event_link.rsplit("/", 2)[-2]
-            event_date_str = event_date_str.replace("-", " ").capitalize()
+            event_month_date = event_link_elm.text.strip()
+
+            event_date_str = event_month_date + " " + month_date.strftime("%Y")
+            # event_link = event_link_elm["href"]
+            # event_date_str = event_link.rsplit("/", 2)[-2]
+            # event_date_str = event_date_str.replace("-", " ").capitalize()
             event_date = datetime.strptime(event_date_str, "%B %d %Y")
-            print(event_date_str)
-            print(event_date)
+            # print(event_date_str)
+            # print(event_date)
 
             # If the event date is out of range, continue
             if not (start_date_time < event_date < end_date_time):
@@ -232,7 +236,10 @@ class AshevilleScraper(IngestionModelScraper):
             month_parent_element = month_element.find_parent("article")
 
             new_events = self.get_events_for_month_article(
-                month_parent_element, start_date_time, end_date_time
+                month_parent_element, 
+                start_date_time, 
+                end_date_time,
+                month_date
             )
 
             if new_events is not None:
@@ -386,7 +393,7 @@ def get_events(
 
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
-# dev = True
+dev = True
 if dev:
     start_date_time = datetime(2021, 8, 1)
     end_date_time = datetime(2021, 8, 31)
