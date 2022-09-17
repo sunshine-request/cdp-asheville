@@ -214,9 +214,10 @@ class AshevilleScraper(IngestionModelScraper):
 
         # Get all months between start and end date
         dates = [dt for dt in 
-                rrule(MONTHLY,
-                dtstart=start_date_time, 
-                until=end_date_time)]
+                    rrule(MONTHLY,
+                    dtstart=start_date_time, 
+                    until=end_date_time)
+                ]
 
         events = []
         for month_date in dates:
@@ -231,7 +232,7 @@ class AshevilleScraper(IngestionModelScraper):
                 "article"
             )
 
-            events += self.get_events_for_month_article(\
+            events += self.get_events_for_month_article(
                 month_parent_element, start_date_time, end_date_time)
 
         return events
@@ -394,10 +395,10 @@ def get_events(
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
 # dev = True
-if(dev):
+if dev: 
     start_date_time = datetime(2021, 6, 15)
     end_date_time = datetime(2021, 8, 31)
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)
-
+    print(asheville_events)
