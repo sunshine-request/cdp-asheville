@@ -217,9 +217,12 @@ class AshevilleScraper(IngestionModelScraper):
 
             month_parent_element = month_element.find_parent("article")
 
-            events += self.get_events_for_month_article(
+            new_events = self.get_events_for_month_article(
                 month_parent_element, start_date_time, end_date_time
             )
+
+            if new_events is not None:
+                events += new_events
 
         return events
 
