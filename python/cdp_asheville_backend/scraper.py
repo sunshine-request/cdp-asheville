@@ -533,8 +533,11 @@ class AshevilleScraper(IngestionModelScraper):
         """
 
         # Your implementation here
-        events = self.load_board_and_commission_page(from_dt, to_dt)
-        # events = self.load_council_meeting_materials_page(from_dt, to_dt)
+        board_events = self.load_board_and_commission_page(from_dt, to_dt)
+        events = self.load_council_meeting_materials_page(from_dt, to_dt)
+
+        if board_events is not None:
+            events += board_events
 
         # Future - Pull events from other sources
 
