@@ -562,6 +562,9 @@ class AshevilleScraper(IngestionModelScraper):
         uri: str,
         **kwargs,
     ) -> Optional[str]:
+        print("Captions disabled")
+        return None
+        
         print("Download Subtitle: " + uri)
 
         if "https://www.youtube.com/watch?v=" not in str(uri):
@@ -585,6 +588,7 @@ class AshevilleScraper(IngestionModelScraper):
             "skip_download": True,
             "writesubtitles": True,
             "writeautomaticsub": True,
+            # "subtitlesformat" : "vtt"
         }
 
         with YoutubeDL(ydl_opts) as ydl:
@@ -646,7 +650,7 @@ def get_events(
 
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
-# dev = True
+dev = True
 if dev:
     start_date_time = datetime(2021, 12, 1)
     end_date_time = datetime(2021, 12, 5)
