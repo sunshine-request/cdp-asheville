@@ -299,6 +299,9 @@ class AshevilleScraper(IngestionModelScraper):
 
         events: List[EventIngestionModel] = []
 
+        if board_page is None:
+            return
+
         board_name_elm = board_page.find("h2", attrs={"class": "entry-title"})
 
         if board_name_elm is None:
