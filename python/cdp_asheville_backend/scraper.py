@@ -181,6 +181,33 @@ class AshevilleScraper(IngestionModelScraper):
 
             #     event_title += ": " +  event_date.strftime("%B %-d, %Y")
 
+            # print("TEST")
+            i = "TEST"
+            agenda_uri = self.get_agenda_uri(event_card)
+            import requests
+            from PyPDF2 import PdfReader
+
+            response = requests.get(agenda_uri)
+            # # Write content in pdf file
+            pdf = open("pdf"+str(i)+".pdf", 'wb')
+            pdf.write(response.content)
+            pdf.close()
+            print("File ", i, " downloaded")
+
+
+            if True:
+                reader = PdfReader("pdf"+str(i)+".pdf")
+                number_of_pages = len(reader.pages)
+                # page = reader.pages[0]
+                for page in reader.pages:
+                    text = page.extract_text()
+                    print(text)
+                print(number_of_pages)
+                # print(page)
+                # print(text)
+
+            print(agenda_uri)
+
             events.append(
                 self.get_none_if_empty(
                     EventIngestionModel(
@@ -390,7 +417,7 @@ def get_events(
 
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
-# dev = True
+dev = True
 if dev:
     start_date_time = datetime(2021, 8, 1)
     end_date_time = datetime(2021, 8, 31)
