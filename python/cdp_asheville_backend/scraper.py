@@ -83,7 +83,7 @@ class AshevilleScraper(IngestionModelScraper):
     def process_drive_link(self, input: str) -> str:
         # https://drive.google.com/file/d/1CgJk-55n1ujfYc8-F1U-Rw7YwUdtdZ4P/view
         # https://drive.google.com/uc?export=download&id=1CgJk-55n1ujfYc8-F1U-Rw7YwUdtdZ4P
-        return input.replace("/view", "").replace("file/d/", "uc?export=download&id=")
+        return input.replace("?usp=sharing", "").replace("/view", "").replace("file/d/", "uc?export=download&id=")
 
     def get_sessions(
         self, event_page: BeautifulSoup, event_date: datetime
@@ -286,6 +286,191 @@ class AshevilleScraper(IngestionModelScraper):
             )
         return None
 
+    def get_events_for_board(
+        self,
+        board_page: BeautifulSoup,
+        start_date_time: datetime,
+        end_date_time: datetime,
+    ) -> Optional[List[EventIngestionModel]]:
+
+        events: List[EventIngestionModel] = []
+
+        board_name_elm = board_page.find("h2", attrs={"class": "entry-title"})
+
+        if board_name_elm is None:
+            return
+
+        board_name = board_name_elm.text
+
+        meeting_table = board_page.find('tbody')
+
+        if meeting_table is None:
+            return
+
+        meeting_rows = meeting_table.find_all('tr')
+
+        for meeting_row in meeting_rows:
+            # print(meeting_row)
+
+            meeting_row_tds = meeting_row.find_all('td')
+
+            if len(meeting_row_tds) < 3:
+                continue
+
+            meeting_agenda_td = meeting_row_tds[0]
+            meeting_docs_td = meeting_row_tds[1]
+            meeting_video_td = meeting_row_tds[2]
+
+            video_url = None
+            event_date_str = None
+            agenda_uri = None
+
+            if meeting_video_td is not None:
+                meeting_video_link = meeting_video_td.find('a')
+
+            if meeting_agenda_td is not None:
+                meeting_agenda_link = meeting_agenda_td.find('a')
+                if meeting_agenda_link is not None:
+                    event_date_str = meeting_agenda_link.text.replace("Agenda", "")
+                    event_date_str = event_date_str.replace("Special Meeting", "")
+                    event_date_str = event_date_str.replace("Presentation Schedule", "")
+                    event_date_str = event_date_str.replace("– Staff Report", "")
+                    event_date_str = event_date_str.replace(" –", "")
+                    event_date_str = event_date_str.replace("(Updated)", "")
+                    event_date_str = event_date_str.replace("Updated", "")
+                    event_date_str = event_date_str.replace("Joint Audit Committee Meeting", "")
+                    event_date_str = event_date_str.replace("work session w/ Multimodal Transportation Commission", "")
+                    event_date_str = event_date_str.replace("   ", " ")
+                    event_date_str = event_date_str.replace("  ", " ")
+                    event_date_str = event_date_str.strip()
+                    meeting_agenda_url = meeting_agenda_link['href']
+                    agenda_uri = self.process_drive_link(meeting_agenda_url)
+                    # print(meeting_agenda_url)
+
+
+            if event_date_str is None or meeting_video_link is None:
+                continue
+
+            event_date_str = event_date_str.replace(",", ", ").replace(",", "")
+
+            try:
+                event_date = datetime.strptime(event_date_str, "%B %d %Y")
+
+            except:
+                print("Exception")
+                print(event_date_str)
+                continue
+
+            if not (start_date_time < event_date < end_date_time):
+                continue
+
+            sessions: List[Session] = []
+            session_index = 0
+
+            # Note: It looks like the shortened URL video links cause a validation error
+            # when adding to firestore. Should open an issue on cdp-backend
+            sessions.append(
+                self.get_none_if_empty(
+                    Session(
+                        session_datetime=self.localize_datetime(event_date),
+                        session_index=session_index,
+                        video_uri=meeting_video_link["href"].replace(
+                            "https://youtu.be/", "https://www.youtube.com/watch?v="
+                        ),
+                    )
+                )
+            )
+
+            events.append(
+                self.get_none_if_empty(
+                    EventIngestionModel(
+                        agenda_uri=agenda_uri,
+                        body=Body(name=board_name),
+                        # event_minutes_items=self.get_event_minutes(event_page.soup),
+                        # minutes_uri=None,
+                        sessions=sessions,
+                    )
+                )
+            )
+
+        return reduced_list(events)
+
+    def get_boards(
+        self,
+        event_page: BeautifulSoup,
+        start_date_time: datetime,
+        end_date_time: datetime,
+    ) -> Optional[EventIngestionModel]:
+        """
+        Find the uri for the file containing the agenda for a Portland, OR city
+        council meeting
+
+        Parameters
+        ----------
+        event_page: BeautifulSoup
+            Web page for the meeting loaded as a bs4 object
+
+        Returns
+        -------
+        agenda_uri: Optional[str]
+            The uri for the file containing the meeting's agenda
+        """
+
+        # Get all months between start and end date
+        events = []
+
+        board_table = event_page.find('tbody')
+
+        board_rows = board_table.find_all('tr')
+        # board_rows = [board_table.find('tr')]
+
+        for board_row in board_rows:
+            board_link = board_row.find('td').find('a')
+            if board_link is not None:
+                board_page = load_web_page(
+                     board_link["href"]
+                )
+
+                # print(board_link["href"])
+
+                if board_page is not None:
+                    new_events = self.get_events_for_board(
+                        board_page.soup, start_date_time, end_date_time
+                    )
+
+                    if new_events is not None:
+                        events += new_events
+
+        return events
+
+    def load_board_and_commission_page(
+        self, start_date_time: datetime, end_date_time: datetime
+    ) -> Optional[EventIngestionModel]:
+        """
+        Portland, OR city council meeting information for a specific date
+
+        Parameters
+        ----------
+        event_time: datetime
+            Meeting date
+
+        Returns
+        -------
+        Optional[EventIngestionModel]
+            None if there was no meeting on event_time
+            or information for the meeting did not meet minimal CDP requirements.
+        """
+        # try to load https://www.portland.gov/council/agenda/yyyy/m/d
+
+        event_page = load_web_page(
+            "https://www.ashevillenc.gov/department/city-clerk/boards-and-commissions/"
+        )
+
+        if not event_page.status:
+            return None
+
+        return self.get_boards(event_page.soup, start_date_time, end_date_time)
+
     def load_council_meeting_materials_page(
         self, start_date_time: datetime, end_date_time: datetime
     ) -> Optional[EventIngestionModel]:
@@ -344,7 +529,8 @@ class AshevilleScraper(IngestionModelScraper):
         """
 
         # Your implementation here
-        events = self.load_council_meeting_materials_page(from_dt, to_dt)
+        events = self.load_board_and_commission_page(from_dt, to_dt)
+        # events = self.load_council_meeting_materials_page(from_dt, to_dt)
 
         # Future - Pull events from other sources
 
@@ -392,8 +578,8 @@ dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
 # dev = True
 if dev:
-    start_date_time = datetime(2021, 8, 1)
-    end_date_time = datetime(2021, 8, 31)
+    start_date_time = datetime(2022, 8, 1)
+    end_date_time = datetime(2022, 8, 31)
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)
