@@ -43,6 +43,9 @@ from bs4 import BeautifulSoup
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from cdp_backend.utils import (
+    file_utils
+)
 
 class WebPageSoup(NamedTuple):
     status: bool
@@ -120,14 +123,18 @@ class AshevilleScraper(IngestionModelScraper):
         # Note: It looks like the shortened URL video links cause a validation error
         # when adding to firestore. Should open an issue on cdp-backend
         for session_video_link in event_page.find_all("a"):
+            processed_video_url = session_video_link["href"].replace(
+                "https://youtu.be/", "https://www.youtube.com/watch?v="
+            )
+            caption_uri = self.get_captions(processed_video_url)
+
             sessions.append(
                 self.get_none_if_empty(
                     Session(
                         session_datetime=self.localize_datetime(event_date),
                         session_index=session_index,
-                        video_uri=session_video_link["href"].replace(
-                            "https://youtu.be/", "https://www.youtube.com/watch?v="
-                        ),
+                        video_uri=processed_video_url,
+                        caption_uri=caption_uri
                     )
                 )
             )
@@ -376,6 +383,11 @@ class AshevilleScraper(IngestionModelScraper):
             sessions: List[Session] = []
             session_index = 0
 
+            processed_video_url = meeting_video_link["href"].replace(
+                "https://youtu.be/", "https://www.youtube.com/watch?v="
+            )
+            caption_uri = self.get_captions(processed_video_url)
+
             # Note: It looks like the shortened URL video links cause a validation error
             # when adding to firestore. Should open an issue on cdp-backend
             sessions.append(
@@ -383,9 +395,8 @@ class AshevilleScraper(IngestionModelScraper):
                     Session(
                         session_datetime=self.localize_datetime(event_date),
                         session_index=session_index,
-                        video_uri=meeting_video_link["href"].replace(
-                            "https://youtu.be/", "https://www.youtube.com/watch?v="
-                        ),
+                        video_uri=processed_video_url,
+                        caption_uri=caption_uri,
                     )
                 )
             )
@@ -547,6 +558,44 @@ class AshevilleScraper(IngestionModelScraper):
         # print(events)
         return events
 
+    def get_captions(        
+        self,
+        uri: str,
+        **kwargs,
+    ) -> Optional[str]:
+        print("Download Subtitle: " + uri)
+
+        if not "https://www.youtube.com/watch?v=" in str(uri):
+            print("Not youtube, skip caption download")
+            return None
+
+        from yt_dlp import YoutubeDL
+
+        # Ensure dest isn't a file
+        # if dst.is_file() and not overwrite:
+        #     raise FileExistsError(dst)
+
+        video_id = uri.replace("https://www.youtube.com/watch?v=", "")
+
+        subtitle_download_dst = video_id + "subtitle-dl"
+        subtitle_copy_dst = video_id + "subtitle" + ".en.vtt"
+        ydl_opts = {
+            "outtmpl":  subtitle_download_dst, 
+            "subtitleslangs": ["en"], 
+            "skip_download" : True, 
+            "writesubtitles" : True, 
+            "writeautomaticsub": True 
+        }
+
+        with YoutubeDL(ydl_opts) as ydl:
+            ydl.download([uri])
+            resource_copy_filepath =  file_utils.resource_copy(
+                uri=subtitle_download_dst + ".en.vtt",
+                dst=subtitle_copy_dst,
+                overwrite=True,
+            )
+
+            return resource_copy_filepath
 
 ####
 
