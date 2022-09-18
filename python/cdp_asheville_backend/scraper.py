@@ -578,6 +578,7 @@ class AshevilleScraper(IngestionModelScraper):
 
         subtitle_download_dst = video_id + "subtitle-dl"
         subtitle_copy_dst = video_id + "subtitle" + ".en.vtt"
+
         ydl_opts = {
             "outtmpl": subtitle_download_dst,
             "subtitleslangs": ["en"],
@@ -588,6 +589,16 @@ class AshevilleScraper(IngestionModelScraper):
 
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download([uri])
+
+            with open(subtitle_download_dst + ".en.vtt", "r+") as f:
+                new_f = f.readlines()
+                f.seek(0)
+                for line in new_f:
+                    if "Kind: captions" not in line:
+                        if "Language: en" not in line:
+                            f.write(line)
+                f.truncate()
+
             resource_copy_filepath = file_utils.resource_copy(
                 uri=subtitle_download_dst + ".en.vtt",
                 dst=subtitle_copy_dst,
@@ -637,8 +648,8 @@ dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
 # dev = True
 if dev:
-    start_date_time = datetime(2022, 8, 1)
-    end_date_time = datetime(2022, 8, 31)
+    start_date_time = datetime(2021, 12, 1)
+    end_date_time = datetime(2021, 12, 5)
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)
