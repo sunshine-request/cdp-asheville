@@ -43,9 +43,8 @@ from bs4 import BeautifulSoup
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from cdp_backend.utils import (
-    file_utils
-)
+from cdp_backend.utils import file_utils
+
 
 class WebPageSoup(NamedTuple):
     status: bool
@@ -134,7 +133,7 @@ class AshevilleScraper(IngestionModelScraper):
                         session_datetime=self.localize_datetime(event_date),
                         session_index=session_index,
                         video_uri=processed_video_url,
-                        caption_uri=caption_uri
+                        caption_uri=caption_uri,
                     )
                 )
             )
@@ -558,7 +557,7 @@ class AshevilleScraper(IngestionModelScraper):
         # print(events)
         return events
 
-    def get_captions(        
+    def get_captions(
         self,
         uri: str,
         **kwargs,
@@ -580,22 +579,23 @@ class AshevilleScraper(IngestionModelScraper):
         subtitle_download_dst = video_id + "subtitle-dl"
         subtitle_copy_dst = video_id + "subtitle" + ".en.vtt"
         ydl_opts = {
-            "outtmpl":  subtitle_download_dst, 
-            "subtitleslangs": ["en"], 
-            "skip_download" : True, 
-            "writesubtitles" : True, 
-            "writeautomaticsub": True 
+            "outtmpl": subtitle_download_dst,
+            "subtitleslangs": ["en"],
+            "skip_download": True,
+            "writesubtitles": True,
+            "writeautomaticsub": True,
         }
 
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download([uri])
-            resource_copy_filepath =  file_utils.resource_copy(
+            resource_copy_filepath = file_utils.resource_copy(
                 uri=subtitle_download_dst + ".en.vtt",
                 dst=subtitle_copy_dst,
                 overwrite=True,
             )
 
             return resource_copy_filepath
+
 
 ####
 
