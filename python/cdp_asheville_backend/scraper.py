@@ -322,10 +322,9 @@ class AshevilleScraper(IngestionModelScraper):
                 continue
 
             meeting_agenda_td = meeting_row_tds[0]
-            meeting_docs_td = meeting_row_tds[1]
+            # meeting_docs_td = meeting_row_tds[1]
             meeting_video_td = meeting_row_tds[2]
 
-            video_url = None
             event_date_str = None
             agenda_uri = None
 
@@ -363,7 +362,7 @@ class AshevilleScraper(IngestionModelScraper):
             try:
                 event_date = datetime.strptime(event_date_str, "%B %d %Y")
 
-            except:
+            except ValueError:
                 print("Exception")
                 print(event_date_str)
                 continue
