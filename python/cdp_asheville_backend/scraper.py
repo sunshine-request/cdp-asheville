@@ -83,7 +83,11 @@ class AshevilleScraper(IngestionModelScraper):
     def process_drive_link(self, input: str) -> str:
         # https://drive.google.com/file/d/1CgJk-55n1ujfYc8-F1U-Rw7YwUdtdZ4P/view
         # https://drive.google.com/uc?export=download&id=1CgJk-55n1ujfYc8-F1U-Rw7YwUdtdZ4P
-        return input.replace("?usp=sharing", "").replace("/view", "").replace("file/d/", "uc?export=download&id=")
+        return (
+            input.replace("?usp=sharing", "")
+            .replace("/view", "")
+            .replace("file/d/", "uc?export=download&id=")
+        )
 
     def get_sessions(
         self, event_page: BeautifulSoup, event_date: datetime
@@ -302,17 +306,17 @@ class AshevilleScraper(IngestionModelScraper):
 
         board_name = board_name_elm.text
 
-        meeting_table = board_page.find('tbody')
+        meeting_table = board_page.find("tbody")
 
         if meeting_table is None:
             return
 
-        meeting_rows = meeting_table.find_all('tr')
+        meeting_rows = meeting_table.find_all("tr")
 
         for meeting_row in meeting_rows:
             # print(meeting_row)
 
-            meeting_row_tds = meeting_row.find_all('td')
+            meeting_row_tds = meeting_row.find_all("td")
 
             if len(meeting_row_tds) < 3:
                 continue
@@ -326,10 +330,10 @@ class AshevilleScraper(IngestionModelScraper):
             agenda_uri = None
 
             if meeting_video_td is not None:
-                meeting_video_link = meeting_video_td.find('a')
+                meeting_video_link = meeting_video_td.find("a")
 
             if meeting_agenda_td is not None:
-                meeting_agenda_link = meeting_agenda_td.find('a')
+                meeting_agenda_link = meeting_agenda_td.find("a")
                 if meeting_agenda_link is not None:
                     event_date_str = meeting_agenda_link.text.replace("Agenda", "")
                     event_date_str = event_date_str.replace("Special Meeting", "")
@@ -338,15 +342,18 @@ class AshevilleScraper(IngestionModelScraper):
                     event_date_str = event_date_str.replace(" –", "")
                     event_date_str = event_date_str.replace("(Updated)", "")
                     event_date_str = event_date_str.replace("Updated", "")
-                    event_date_str = event_date_str.replace("Joint Audit Committee Meeting", "")
-                    event_date_str = event_date_str.replace("work session w/ Multimodal Transportation Commission", "")
+                    event_date_str = event_date_str.replace(
+                        "Joint Audit Committee Meeting", ""
+                    )
+                    event_date_str = event_date_str.replace(
+                        "work session w/ Multimodal Transportation Commission", ""
+                    )
                     event_date_str = event_date_str.replace("   ", " ")
                     event_date_str = event_date_str.replace("  ", " ")
                     event_date_str = event_date_str.strip()
-                    meeting_agenda_url = meeting_agenda_link['href']
+                    meeting_agenda_url = meeting_agenda_link["href"]
                     agenda_uri = self.process_drive_link(meeting_agenda_url)
                     # print(meeting_agenda_url)
-
 
             if event_date_str is None or meeting_video_link is None:
                 continue
@@ -419,17 +426,15 @@ class AshevilleScraper(IngestionModelScraper):
         # Get all months between start and end date
         events = []
 
-        board_table = event_page.find('tbody')
+        board_table = event_page.find("tbody")
 
-        board_rows = board_table.find_all('tr')
+        board_rows = board_table.find_all("tr")
         # board_rows = [board_table.find('tr')]
 
         for board_row in board_rows:
-            board_link = board_row.find('td').find('a')
+            board_link = board_row.find("td").find("a")
             if board_link is not None:
-                board_page = load_web_page(
-                     board_link["href"]
-                )
+                board_page = load_web_page(board_link["href"])
 
                 # print(board_link["href"])
 
