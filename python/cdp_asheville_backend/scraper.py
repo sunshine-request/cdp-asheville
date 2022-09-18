@@ -564,7 +564,7 @@ class AshevilleScraper(IngestionModelScraper):
     ) -> Optional[str]:
         print("Download Subtitle: " + uri)
 
-        if not "https://www.youtube.com/watch?v=" in str(uri):
+        if "https://www.youtube.com/watch?v=" not in str(uri):
             print("Not youtube, skip caption download")
             return None
 
