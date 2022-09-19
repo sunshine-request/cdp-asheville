@@ -670,8 +670,8 @@ dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
 # dev = True
 if dev:
-    start_date_time = datetime(2021, 12, 1)
-    end_date_time = datetime(2021, 12, 5)
+    start_date_time = datetime(2021, 12, 6)
+    end_date_time = datetime(2021, 12, 10)
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)
