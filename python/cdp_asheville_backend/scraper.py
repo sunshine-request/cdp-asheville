@@ -565,8 +565,8 @@ class AshevilleScraper(IngestionModelScraper):
         uri: str,
         **kwargs,
     ) -> Optional[str]:
-        # print("Captions disabled")
-        # return None
+        print("Captions disabled")
+        return None
 
         print("Download Subtitle: " + uri)
 
