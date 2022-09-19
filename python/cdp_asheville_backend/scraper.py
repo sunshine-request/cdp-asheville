@@ -45,6 +45,9 @@ from urllib.request import Request, urlopen
 
 from cdp_backend.utils import file_utils
 
+from youtube_transcript_api import YouTubeTranscriptApi
+from youtube_transcript_api.formatters import WebVTTFormatter
+
 
 class WebPageSoup(NamedTuple):
     status: bool
@@ -562,8 +565,8 @@ class AshevilleScraper(IngestionModelScraper):
         uri: str,
         **kwargs,
     ) -> Optional[str]:
-        print("Captions disabled")
-        return None
+        # print("Captions disabled")
+        # return None
 
         print("Download Subtitle: " + uri)
 
@@ -571,45 +574,60 @@ class AshevilleScraper(IngestionModelScraper):
             print("Not youtube, skip caption download")
             return None
 
-        from yt_dlp import YoutubeDL
-
         # Ensure dest isn't a file
         # if dst.is_file() and not overwrite:
         #     raise FileExistsError(dst)
 
         video_id = uri.replace("https://www.youtube.com/watch?v=", "")
 
-        subtitle_download_dst = video_id + "subtitle-dl"
-        subtitle_copy_dst = video_id + "subtitle" + ".en.vtt"
+        subtitle_download_dst = video_id + "subtitle-dl.en.vtt"
+        subtitle_copy_dst = video_id + "subtitle.en.vtt"
 
-        ydl_opts = {
-            "outtmpl": subtitle_download_dst,
-            "subtitleslangs": ["en"],
-            "skip_download": True,
-            "writesubtitles": True,
-            "writeautomaticsub": True,
-            # "subtitlesformat" : "vtt"
-        }
+        transcript = YouTubeTranscriptApi.get_transcript(video_id)
+        formatter = WebVTTFormatter()
+        vtt_formatted = formatter.format_transcript(transcript)
 
-        with YoutubeDL(ydl_opts) as ydl:
-            ydl.download([uri])
+        with open(subtitle_download_dst, "w", encoding="utf-8") as vtt_file:
+            vtt_file.write(vtt_formatted)
 
-            with open(subtitle_download_dst + ".en.vtt", "r+") as f:
-                new_f = f.readlines()
-                f.seek(0)
-                for line in new_f:
-                    if "Kind: captions" not in line:
-                        if "Language: en" not in line:
-                            f.write(line)
-                f.truncate()
+        resource_copy_filepath = file_utils.resource_copy(
+            uri=subtitle_download_dst,
+            dst=subtitle_copy_dst,
+            overwrite=True,
+        )
 
-            resource_copy_filepath = file_utils.resource_copy(
-                uri=subtitle_download_dst + ".en.vtt",
-                dst=subtitle_copy_dst,
-                overwrite=True,
-            )
+        return resource_copy_filepath
 
-            return resource_copy_filepath
+        # if False:
+        #     from yt_dlp import YoutubeDL
+
+        #     ydl_opts = {
+        #         "outtmpl": subtitle_download_dst,
+        #         "subtitleslangs": ["en"],
+        #         "skip_download": True,
+        #         "writesubtitles": True,
+        #         "writeautomaticsub": True,
+        #         # "subtitlesformat" : "vtt"
+        #     }
+        #     with YoutubeDL(ydl_opts) as ydl:
+        #         ydl.download([uri])
+
+        #         with open(subtitle_download_dst + ".en.vtt", "r+") as f:
+        #             new_f = f.readlines()
+        #             f.seek(0)
+        #             for line in new_f:
+        #                 if "Kind: captions" not in line:
+        #                     if "Language: en" not in line:
+        #                         f.write(line)
+        #             f.truncate()
+
+        #         resource_copy_filepath = file_utils.resource_copy(
+        #             uri=subtitle_download_dst + ".en.vtt",
+        #             dst=subtitle_copy_dst,
+        #             overwrite=True,
+        #         )
+
+        #         return resource_copy_filepath
 
 
 ####
@@ -650,7 +668,7 @@ def get_events(
 
 dev = False
 # FOR DEV, Uncomment line below, then run python scraper.py
-dev = True
+# dev = True
 if dev:
     start_date_time = datetime(2021, 12, 1)
     end_date_time = datetime(2021, 12, 5)
