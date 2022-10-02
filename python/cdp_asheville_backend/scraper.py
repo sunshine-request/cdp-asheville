@@ -49,7 +49,7 @@ from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import WebVTTFormatter
 
 import spacy
-import en_core_web_trf
+import en_core_web_lg
 
 class TranscriptSentenceModifier:
     def __init__(self):
@@ -59,7 +59,7 @@ class TranscriptSentenceModifier:
         self, video_id: str, original_transcript_file_name: str
     ) -> Optional[str]:
 
-        nlp = spacy.load("en_core_web_trf")
+        nlp = spacy.load("en_core_web_lg")
 
         intermediate_transcript_file_name = "intermediate.vtt"
         output_transcript_file_name = video_id + "-caption-outupt.vtt"
@@ -621,8 +621,8 @@ class AshevilleScraper(IngestionModelScraper):
         uri: str,
         **kwargs,
     ) -> Optional[str]:
-        print("Captions disabled")
-        return None
+        # print("Captions disabled")
+        # return None
 
         print("Download Subtitle: " + uri)
 
