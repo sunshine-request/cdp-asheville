@@ -680,8 +680,8 @@ def get_events(
 # Allow caller to directly run this module (usually in development scenarios)
 
 if __name__ == "__main__":
-    start_date_time = datetime(2021, 12, 6)
-    end_date_time = datetime(2021, 12, 10)
+    start_date_time = datetime(2021, 11, 16)
+    end_date_time = datetime(2021, 11, 18)
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)

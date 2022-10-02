@@ -1,5 +1,4 @@
 from typing import Optional
-import sys
 import re
 import spacy
 
@@ -21,7 +20,7 @@ class TranscriptSentenceModifier:
             full_transcript_file = f.read()
 
         pattern = re.compile(
-            "^\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}", re.MULTILINE
+            r"^\d{2}:\d{2}:\d{2}\.\d{3} --> \d{2}:\d{2}:\d{2}\.\d{3}", re.MULTILINE
         )
 
         text = full_transcript_file
