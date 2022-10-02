@@ -8,7 +8,9 @@ from setuptools import find_packages, setup
 requirements = [
     "cdp-backend[pipeline]==3.2.4",
     "cdp-scrapers[portland]>=0.4.0",
-    "youtube_transcript_api"
+    "youtube_transcript_api",
+    "spacy",
+    "en_core_web_sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.4.0/en_core_web_sm-3.4.0.tar.gz"
 ]
 
 test_requirements = [

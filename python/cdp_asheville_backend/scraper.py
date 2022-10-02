@@ -48,6 +48,8 @@ from cdp_backend.utils import file_utils
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import WebVTTFormatter
 
+from sentences import TranscriptSentenceModifier
+
 
 class WebPageSoup(NamedTuple):
     status: bool
@@ -565,8 +567,8 @@ class AshevilleScraper(IngestionModelScraper):
         uri: str,
         **kwargs,
     ) -> Optional[str]:
-        print("Captions disabled")
-        return None
+        # print("Captions disabled")
+        # return None
 
         print("Download Subtitle: " + uri)
 
@@ -590,8 +592,17 @@ class AshevilleScraper(IngestionModelScraper):
         with open(subtitle_download_dst, "w", encoding="utf-8") as vtt_file:
             vtt_file.write(vtt_formatted)
 
+        sentence_transformer = TranscriptSentenceModifier()
+        processed_transcript_file = sentence_transformer.translate_transcript_file(
+            video_id=video_id,
+            original_transcript_file_name=subtitle_download_dst
+        )
+
+        if processed_transcript_file is None:
+            return None
+
         resource_copy_filepath = file_utils.resource_copy(
-            uri=subtitle_download_dst,
+            uri=processed_transcript_file,
             dst=subtitle_copy_dst,
             overwrite=True,
         )
@@ -665,11 +676,10 @@ def get_events(
     scraper = AshevilleScraper()
     return scraper.get_events(from_dt, to_dt)
 
+###############################################################################
+# Allow caller to directly run this module (usually in development scenarios)
 
-dev = False
-# FOR DEV, Uncomment line below, then run python scraper.py
-# dev = True
-if dev:
+if __name__ == "__main__":
     start_date_time = datetime(2021, 12, 6)
     end_date_time = datetime(2021, 12, 10)
 
