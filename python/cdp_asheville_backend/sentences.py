@@ -14,7 +14,7 @@ class TranscriptSentenceModifier:
         nlp = spacy.load("en_core_web_lg")
 
         intermediate_transcript_file_name = "intermediate.vtt"
-        output_transcript_file_name = "outupt.vtt"
+        output_transcript_file_name = video_id + "-caption-outupt.vtt"
 
         with open(original_transcript_file_name) as f:
             full_transcript_file = f.read()
@@ -53,3 +53,5 @@ class TranscriptSentenceModifier:
                     f.write(intermediate_transcript_file[line_number])
 
                 line_number += 1
+                
+        return output_transcript_file_name
