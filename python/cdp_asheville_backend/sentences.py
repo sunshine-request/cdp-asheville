@@ -1,6 +1,7 @@
 from typing import Optional
 import re
 import spacy
+import en_core_web_trf
 
 
 class TranscriptSentenceModifier:
@@ -11,7 +12,7 @@ class TranscriptSentenceModifier:
         self, video_id: str, original_transcript_file_name: str
     ) -> Optional[str]:
 
-        nlp = spacy.load("en_core_web_lg")
+        nlp = spacy.load("en_core_web_trf")
 
         intermediate_transcript_file_name = "intermediate.vtt"
         output_transcript_file_name = video_id + "-caption-outupt.vtt"
@@ -53,5 +54,5 @@ class TranscriptSentenceModifier:
                     f.write(intermediate_transcript_file[line_number])
 
                 line_number += 1
-                
+
         return output_transcript_file_name
