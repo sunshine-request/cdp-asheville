@@ -79,7 +79,7 @@ class TranscriptSentenceModifier:
 
         with open(intermediate_transcript_file_name, "w") as f:
             for sent in doc.sents:
-                sentence_text = sent.text.capitalize() + ".PRCLINEBREAK"
+                sentence_text = sent.text.capitalize() + ". "
                 # sentence_text = sentence_text.replace(" .", ".")
                 f.write(sentence_text)
                 # f.write("\n")
@@ -101,7 +101,7 @@ class TranscriptSentenceModifier:
                     f.write(original_transcript_file[line_number])
                 else:
                     processed_intermediate_line = intermediate_transcript_file[line_number]
-                    processed_intermediate_line = processed_intermediate_line.replace("PRCLINEBREAK", "\n")
+                    processed_intermediate_line = processed_intermediate_line.replace(". ", ".\n")
                     f.write(processed_intermediate_line)
 
                 line_number += 1
@@ -625,8 +625,8 @@ class AshevilleScraper(IngestionModelScraper):
         uri: str,
         **kwargs,
     ) -> Optional[str]:
-        print("Captions disabled")
-        return None
+        # print("Captions disabled")
+        # return None
 
         print("Download Subtitle: " + uri)
 
