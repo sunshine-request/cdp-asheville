@@ -10,7 +10,7 @@ requirements = [
     "cdp-scrapers[portland]>=0.4.0",
     "youtube_transcript_api",
     "spacy",
-    "en_core_web_trf @ https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.4.0/en_core_web_trf-3.4.0.tar.gz"
+    "en_core_web_lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.4.0/en_core_web_lg-3.4.0.tar.gz"
 ]
 
 test_requirements = [
