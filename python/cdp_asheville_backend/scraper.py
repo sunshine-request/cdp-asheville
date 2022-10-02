@@ -48,7 +48,7 @@ from cdp_backend.utils import file_utils
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import WebVTTFormatter
 
-from sentences import TranscriptSentenceModifier
+import sentences
 
 
 class WebPageSoup(NamedTuple):
