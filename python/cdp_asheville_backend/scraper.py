@@ -79,7 +79,9 @@ class TranscriptSentenceModifier:
 
         with open(intermediate_transcript_file_name, "w") as f:
             for sent in doc.sents:
-                f.write(sent.text.capitalize() + ". ")
+                sentence_text = sent.text.capitalize() + ". "
+                # sentence_text = sentence_text.replace(" .", ".")
+                f.write(sentence_text)
                 # f.write("\n")
 
         with open(intermediate_transcript_file_name) as f:
@@ -621,8 +623,8 @@ class AshevilleScraper(IngestionModelScraper):
         uri: str,
         **kwargs,
     ) -> Optional[str]:
-        # print("Captions disabled")
-        # return None
+        print("Captions disabled")
+        return None
 
         print("Download Subtitle: " + uri)
 
