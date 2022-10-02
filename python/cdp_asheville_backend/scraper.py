@@ -594,8 +594,7 @@ class AshevilleScraper(IngestionModelScraper):
 
         sentence_transformer = TranscriptSentenceModifier()
         processed_transcript_file = sentence_transformer.translate_transcript_file(
-            video_id=video_id,
-            original_transcript_file_name=subtitle_download_dst
+            video_id=video_id, original_transcript_file_name=subtitle_download_dst
         )
 
         if processed_transcript_file is None:
@@ -675,6 +674,7 @@ def get_events(
     # Your implementation here
     scraper = AshevilleScraper()
     return scraper.get_events(from_dt, to_dt)
+
 
 ###############################################################################
 # Allow caller to directly run this module (usually in development scenarios)
