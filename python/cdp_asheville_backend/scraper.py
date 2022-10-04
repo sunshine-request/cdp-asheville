@@ -48,6 +48,7 @@ from cdp_backend.utils import file_utils
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import WebVTTFormatter
 
+
 class TranscriptSentenceModifier:
     def __init__(self):
         super().__init__()
@@ -56,7 +57,7 @@ class TranscriptSentenceModifier:
         self, video_id: str, original_transcript_file_name: str
     ) -> Optional[str]:
         import spacy
-        import en_core_web_lg
+        import en_core_web_lg  # noqa: F401
 
         nlp = spacy.load("en_core_web_lg")
 
@@ -99,8 +100,14 @@ class TranscriptSentenceModifier:
                 elif line_number == 0:
                     f.write(original_transcript_file[line_number])
                 else:
-                    processed_intermediate_line = intermediate_transcript_file[line_number]
-                    processed_intermediate_line = processed_intermediate_line.replace(". ", ".\n")
+                    processed_intermediate_line = intermediate_transcript_file[
+                        line_number
+                    ]
+
+                    processed_intermediate_line = processed_intermediate_line.replace(
+                        ". ", ".\n"
+                    )
+
                     f.write(processed_intermediate_line)
 
                 line_number += 1
@@ -431,7 +438,8 @@ class AshevilleScraper(IngestionModelScraper):
             if event_date_str is None or meeting_video_link is None:
                 continue
 
-            event_date_str = event_date_str.replace(",", ", ").replace(",", "").replace("  ", " ")
+            event_date_str = event_date_str.replace(",", ", ").replace(",", "")
+            event_date_str = event_date_str.replace("  ", " ")
 
             try:
                 event_date = datetime.strptime(event_date_str, "%B %d %Y")
