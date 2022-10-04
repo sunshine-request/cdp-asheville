@@ -302,6 +302,9 @@ class AshevilleScraper(IngestionModelScraper):
 
             month_element = event_page.find("h3", text=re.compile(month_date_formatted))
 
+            if month_element is None:
+                continue
+
             month_parent_element = month_element.find_parent("article")
 
             new_events = self.get_events_for_month_article(
@@ -429,7 +432,7 @@ class AshevilleScraper(IngestionModelScraper):
             if event_date_str is None or meeting_video_link is None:
                 continue
 
-            event_date_str = event_date_str.replace(",", ", ").replace(",", "")
+            event_date_str = event_date_str.replace(",", ", ").replace(",", "").replace("  ", " ")
 
             try:
                 event_date = datetime.strptime(event_date_str, "%B %d %Y")
@@ -738,8 +741,8 @@ def get_events(
 # Allow caller to directly run this module (usually in development scenarios)
 
 if __name__ == "__main__":
-    start_date_time = datetime(2021, 11, 16)
-    end_date_time = datetime(2021, 11, 18)
+    start_date_time = datetime(2022, 10, 1)
+    end_date_time = datetime(2021, 10, 4)
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)
