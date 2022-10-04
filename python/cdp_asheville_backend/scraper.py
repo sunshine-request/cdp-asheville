@@ -48,9 +48,6 @@ from cdp_backend.utils import file_utils
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api.formatters import WebVTTFormatter
 
-import spacy
-import en_core_web_lg
-
 class TranscriptSentenceModifier:
     def __init__(self):
         super().__init__()
@@ -58,6 +55,8 @@ class TranscriptSentenceModifier:
     def translate_transcript_file(
         self, video_id: str, original_transcript_file_name: str
     ) -> Optional[str]:
+        import spacy
+        import en_core_web_lg
 
         nlp = spacy.load("en_core_web_lg")
 
