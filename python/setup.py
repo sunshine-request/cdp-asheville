@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 requirements = [
-    "cdp-backend[pipeline]==3.2.10",
+    "cdp-backend[pipeline]==3.2.11",
     "cdp-scrapers[portland]>=0.4.0",
     "youtube_transcript_api",
     "spacy",
