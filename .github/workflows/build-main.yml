@@ -34,7 +34,7 @@ jobs:
       run: |
         cd python/
         flake8 cdp_asheville_backend --count --verbose --show-source --statistics
-        black --check cdp_asheville_backend
+        black --check --verbose cdp_asheville_backend
 
   build-web:
     runs-on: ubuntu-latest
