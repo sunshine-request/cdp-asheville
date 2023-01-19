@@ -218,7 +218,6 @@ class AshevilleScraper(IngestionModelScraper):
         end_date_time: datetime,
         month_date: datetime,
     ) -> Optional[List[EventIngestionModel]]:
-
         # print("Events for month")
 
         event_headers = soup_article.find_all("h4")
@@ -374,7 +373,6 @@ class AshevilleScraper(IngestionModelScraper):
         start_date_time: datetime,
         end_date_time: datetime,
     ) -> Optional[List[EventIngestionModel]]:
-
         events: List[EventIngestionModel] = []
 
         if board_page is None:
