@@ -194,6 +194,14 @@ class AshevilleScraper(IngestionModelScraper):
             processed_video_url = session_video_link["href"].replace(
                 "https://youtu.be/", "https://www.youtube.com/watch?v="
             )
+
+            # PRC 02.2023 - More processing of URLs
+            processed_video_url = processed_video_url.replace("https://youtube.com/live/", "https://www.youtube.com/watch?v=")
+
+            processed_video_url = processed_video_url.replace("?feature=share", "")
+
+            print("Processed video URL: " + processed_video_url)
+
             caption_uri = self.get_captions(processed_video_url)
 
             sessions.append(
