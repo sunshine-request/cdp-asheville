@@ -202,6 +202,11 @@ class AshevilleScraper(IngestionModelScraper):
 
             print("Processed video URL: " + processed_video_url)
 
+            if(processed_video_url eq "https://www.youtube.com/user/CityofAsheville/featured"):
+                print("Bail, it's the City user page")
+                processed_video_url = False
+
+
             caption_uri = self.get_captions(processed_video_url)
 
             sessions.append(
@@ -464,6 +469,19 @@ class AshevilleScraper(IngestionModelScraper):
             processed_video_url = meeting_video_link["href"].replace(
                 "https://youtu.be/", "https://www.youtube.com/watch?v="
             )
+
+            # PRC 02.2023 - More processing of URLs
+            processed_video_url = processed_video_url.replace("https://youtube.com/live/", "https://www.youtube.com/watch?v=")
+
+            processed_video_url = processed_video_url.replace("?feature=share", "")
+
+            print("Processed video URL: " + processed_video_url)
+
+            if(processed_video_url eq "https://www.youtube.com/user/CityofAsheville/featured"):
+                print("Bail, it's the City user page")
+                processed_video_url = False
+
+
             caption_uri = self.get_captions(processed_video_url)
 
             # Note: It looks like the shortened URL video links cause a validation error
