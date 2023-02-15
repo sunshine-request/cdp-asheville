@@ -202,7 +202,7 @@ class AshevilleScraper(IngestionModelScraper):
 
             print("Processed video URL: " + processed_video_url)
 
-            if(processed_video_url eq "https://www.youtube.com/user/CityofAsheville/featured"):
+            if(processed_video_url == "https://www.youtube.com/user/CityofAsheville/featured"):
                 print("Bail, it's the City user page")
                 processed_video_url = False
 
@@ -477,7 +477,7 @@ class AshevilleScraper(IngestionModelScraper):
 
             print("Processed video URL: " + processed_video_url)
 
-            if(processed_video_url eq "https://www.youtube.com/user/CityofAsheville/featured"):
+            if(processed_video_url == "https://www.youtube.com/user/CityofAsheville/featured"):
                 print("Bail, it's the City user page")
                 processed_video_url = False
 
