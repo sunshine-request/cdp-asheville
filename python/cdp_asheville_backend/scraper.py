@@ -197,6 +197,7 @@ class AshevilleScraper(IngestionModelScraper):
 
             # PRC 02.2023 - More processing of URLs
             processed_video_url = processed_video_url.replace("https://youtube.com/live/", "https://www.youtube.com/watch?v=")
+            processed_video_url = processed_video_url.replace("https://www.youtube.com/live/", "https://www.youtube.com/watch?v=")
 
             processed_video_url = processed_video_url.replace("?feature=share", "")
 
@@ -472,6 +473,7 @@ class AshevilleScraper(IngestionModelScraper):
 
             # PRC 02.2023 - More processing of URLs
             processed_video_url = processed_video_url.replace("https://youtube.com/live/", "https://www.youtube.com/watch?v=")
+            processed_video_url = processed_video_url.replace("https://www.youtube.com/live/", "https://www.youtube.com/watch?v=")
 
             processed_video_url = processed_video_url.replace("?feature=share", "")
 
