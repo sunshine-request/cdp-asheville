@@ -45,6 +45,7 @@ from urllib.request import Request, urlopen
 
 from cdp_backend.utils import file_utils
 
+
 class WebPageSoup(NamedTuple):
     status: bool
     soup: Optional[BeautifulSoup] = None
@@ -605,6 +606,7 @@ class AshevilleScraper(IngestionModelScraper):
     ) -> Optional[str]:
         print("Captions disabled")
         return None
+
 
 def get_events(
     from_dt: datetime,
