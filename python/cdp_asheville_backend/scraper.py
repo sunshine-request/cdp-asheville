@@ -43,8 +43,6 @@ from bs4 import BeautifulSoup
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
-from cdp_backend.utils import file_utils
-
 
 class WebPageSoup(NamedTuple):
     status: bool
