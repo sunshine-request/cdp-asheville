@@ -586,9 +586,12 @@ class AshevilleScraper(IngestionModelScraper):
         from GitHub Actions UI.
         """
 
+        start_date = pytz.UTC.localize(from_dt)
+        end_date = pytz.UTC.localize(to_dt)
+
         # Your implementation here
-        board_events = self.load_board_and_commission_page(from_dt, to_dt)
-        events = self.load_council_meeting_materials_page(from_dt, to_dt)
+        board_events = self.load_board_and_commission_page(start_date, end_date)
+        events = self.load_council_meeting_materials_page(start_date, end_date)
 
         if board_events is not None:
             events += board_events
@@ -637,7 +640,7 @@ def get_events(
 
     # Your implementation here
     scraper = AshevilleScraper()
-    return scraper.get_events(from_dt, to_dt)
+    return scraper.get_events(start_date, end_date)
 
 
 ###############################################################################
@@ -648,11 +651,11 @@ if __name__ == "__main__":
     # end_date_time = datetime(2021, 10, 4)
     from_dt = "2021-09-26"
 
-    start_date_time = datetime.fromisoformat(from_dt).replace(tzinfo=pytz.UTC)
+    start_date_time = datetime.fromisoformat(from_dt)
 
 
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
-    end_date_time = datetime.fromisoformat("2021-09-29").replace(tzinfo=pytz.UTC)
+    end_date_time = datetime.fromisoformat("2021-09-29")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
