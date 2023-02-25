@@ -183,7 +183,9 @@ class AshevilleScraper(IngestionModelScraper):
             # event_link = event_link_elm["href"]
             # event_date_str = event_link.rsplit("/", 2)[-2]
             # event_date_str = event_date_str.replace("-", " ").capitalize()
-            event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(tzinfo=pytz.UTC)
+            event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(
+                tzinfo=pytz.UTC
+            )
             # print(event_date_str)
             # print(event_date)
 
@@ -390,7 +392,9 @@ class AshevilleScraper(IngestionModelScraper):
             event_date_str = event_date_str.replace("  ", " ")
 
             try:
-                event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(tzinfo=pytz.UTC)
+                event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(
+                    tzinfo=pytz.UTC
+                )
 
             except ValueError:
                 print("Exception")
@@ -653,13 +657,11 @@ if __name__ == "__main__":
 
     start_date_time = datetime.fromisoformat(from_dt)
 
-
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
     end_date_time = datetime.fromisoformat("2021-09-29")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
-
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)
