@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import pytz
 
 from datetime import datetime
 
@@ -182,7 +183,7 @@ class AshevilleScraper(IngestionModelScraper):
             # event_link = event_link_elm["href"]
             # event_date_str = event_link.rsplit("/", 2)[-2]
             # event_date_str = event_date_str.replace("-", " ").capitalize()
-            event_date = datetime.strptime(event_date_str, "%B %d %Y")
+            event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(tzinfo=pytz.UTC)
             # print(event_date_str)
             # print(event_date)
 
@@ -389,7 +390,7 @@ class AshevilleScraper(IngestionModelScraper):
             event_date_str = event_date_str.replace("  ", " ")
 
             try:
-                event_date = datetime.strptime(event_date_str, "%B %d %Y")
+                event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(tzinfo=pytz.UTC)
 
             except ValueError:
                 print("Exception")
@@ -643,8 +644,19 @@ def get_events(
 # Allow caller to directly run this module (usually in development scenarios)
 
 if __name__ == "__main__":
-    start_date_time = datetime(2022, 10, 1)
-    end_date_time = datetime(2021, 10, 4)
+    # start_date_time = datetime(2022, 10, 1)
+    # end_date_time = datetime(2021, 10, 4)
+    from_dt = "2021-09-26"
+
+    start_date_time = datetime.fromisoformat(from_dt).replace(tzinfo=pytz.UTC)
+
+
+    # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
+    end_date_time = datetime.fromisoformat("2021-09-29").replace(tzinfo=pytz.UTC)
+
+    # start_date_time = datetime(2021, 9, 26)
+    # end_date_time = datetime(2021, 9, 29)
+
 
     scraper = AshevilleScraper()
     asheville_events = scraper.get_events(start_date_time, end_date_time)
