@@ -590,8 +590,9 @@ class AshevilleScraper(IngestionModelScraper):
         from GitHub Actions UI.
         """
 
-        start_date = pytz.UTC.localize(from_dt)
-        end_date = pytz.UTC.localize(to_dt)
+        start_date = from_dt.replace(tzinfo=pytz.UTC)
+
+        end_date = to_dt.replace(tzinfo=pytz.UTC)
 
         # Your implementation here
         board_events = self.load_board_and_commission_page(start_date, end_date)
