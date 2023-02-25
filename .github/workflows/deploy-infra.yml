@@ -21,7 +21,7 @@ jobs:
     # Install OS Deps
     - uses: actions/setup-python@v1
       with:
-        python-version: '3.10'
+        python-version: '3.11'
     - uses: extractions/setup-just@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,7 +52,25 @@ jobs:
         cd infrastructure
         echo "$GOOGLE_CREDENTIALS" > google-creds.json
         export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/google-creds.json
-        just deploy cdp-asheville-ektqmrjs ../cookiecutter.yaml
+        just deploy \
+          cdp-asheville-ektqmrjs \
+          $(pwd)/../cookiecutter.yaml \
       env:
         FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
         GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    # Clipping Fill -- 
+    ## Enabled
+    # - name: Run Clipping Deploy
+    #   run: |
+    #     cd infrastructure
+    #     echo "$GOOGLE_CREDENTIALS" > google-creds.json
+    #     export GOOGLE_APPLICATION_CREDENTIALS=$(pwd)/google-creds.json
+    #     just deploy-clipping \
+    #       $(pwd)/google-creds.json \
+    #       us-east1
+    #   env:
+    #     FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+    #     GOOGLE_CREDENTIALS: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+    #

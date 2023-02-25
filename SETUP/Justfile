@@ -14,6 +14,8 @@ default_cookiecutter_yaml := join(justfile_directory(), "dev-cookiecutter-metada
 login:
   gcloud auth login
   gcloud auth application-default login
+  firebase logout
+  firebase login
 
 # switch active gcloud project
 switch-project project:
@@ -31,14 +33,14 @@ gen-key project:
 		--role="roles/owner"
 	gcloud iam service-accounts keys create ../.keys/{{project}}.json \
 		--iam-account "{{project}}@{{project}}.iam.gserviceaccount.com"
-	echo "----------------------------------------------------------------------------"
-	echo "Sleeping for one minute while resources set up"
-	echo "----------------------------------------------------------------------------"
+	@ echo "----------------------------------------------------------------------------"
+	@ echo "Sleeping for one minute while resources set up"
+	@ echo "----------------------------------------------------------------------------"
 	sleep 60
 	cp -rf ../.keys/{{project}}.json ../.keys/cdp-dev.json
-	echo "----------------------------------------------------------------------------"
-	echo "Be sure to update the GOOGLE_APPLICATION_CREDENTIALS environment variable."
-	echo "----------------------------------------------------------------------------"
+	@ echo "----------------------------------------------------------------------------"
+	@ echo "Be sure to update the GOOGLE_APPLICATION_CREDENTIALS environment variable."
+	@ echo "----------------------------------------------------------------------------"
 
 # create a new gcloud project and generate a key
 init project:
@@ -52,13 +54,20 @@ init project:
 # enable gcloud services
 enable-services:
 	gcloud services enable cloudresourcemanager.googleapis.com
-	gcloud services enable speech.googleapis.com \
-		appengine.googleapis.com \
+	gcloud services enable appengine.googleapis.com \
 		storage.googleapis.com \
 		firebase.googleapis.com \
 		firestore.googleapis.com \
 		firebaserules.googleapis.com \
-		firebasestorage.googleapis.com
+		firebasestorage.googleapis.com \
+		cloudfunctions.googleapis.com \
+		compute.googleapis.com \
+		logging.googleapis.com \
+		monitoring.googleapis.com \
+		osconfig.googleapis.com \
+		cloudbuild.googleapis.com \
+		artifactregistry.googleapis.com \
+		run.googleapis.com
 
 # setup the basic gcloud app and firestore connection
 setup project region=default_region:
@@ -67,11 +76,11 @@ setup project region=default_region:
 	gcloud firestore databases create --region={{replace(region, "us-central1", "nam5")}}
 	firebase projects:addfirebase {{project}}
 	firebase use --add {{project}}
-	echo "----------------------------------------------------------------------------"
-	echo "Follow the link to setup Firebase Storage."
-	echo "https://console.firebase.google.com/u/1/project/{{project}}/storage"
-	echo "Default settings ('start in Production mode' and region) are fine."
-	echo "----------------------------------------------------------------------------"
+	@ echo "----------------------------------------------------------------------------"
+	@ echo "Follow the link to setup Firebase Storage."
+	@ echo "https://console.firebase.google.com/u/1/project/{{project}}/storage"
+	@ echo "Default settings ('start in Production mode' and region) are fine."
+	@ echo "----------------------------------------------------------------------------"
 
 # deploy the CDP specific firestore and storage requirements
 deploy project cookiecutter_yaml=default_cookiecutter_yaml:
@@ -83,6 +92,21 @@ deploy project cookiecutter_yaml=default_cookiecutter_yaml:
 	store_cdp_metadata_document {{cookiecutter_yaml}}
 	gsutil cors set cors.json gs://{{project}}.appspot.com/
 	gsutil defacl ch -u AllUsers:R gs://{{project}}.appspot.com/
+	gsutil lifecycle set {{justfile_directory()}}/lifecycle-rules.json gs://{{project}}.appspot.com/
+
+deploy-clipping key=default_key region=default_region:
+	just enable-services
+	cd {{justfile_directory()}}/gcloud-functions/generate-clip/ && \
+		cp {{key}} ./GOOGLE_CREDENTIALS.json && \
+		gcloud functions deploy generate-clip \
+			--gen2 \
+			--region={{ if region == "us-central" { "us-central1" } else { region } }} \
+			--timeout=300 \
+			--runtime python39 \
+			--entry-point=generate_clip \
+			--trigger-http \
+			--memory=1GiB \
+			--allow-unauthenticated
 
 # run both setup and deploy
 setup-and-deploy project region=default_region:

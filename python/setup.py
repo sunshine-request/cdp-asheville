@@ -6,11 +6,7 @@
 from setuptools import find_packages, setup
 
 requirements = [
-    "cdp-backend[pipeline]==4.0.2",
-    "cdp-scrapers[portland]>=0.4.0",
-    "youtube_transcript_api",
-    "spacy",
-    "en_core_web_lg @ https://github.com/explosion/spacy-models/releases/download/en_core_web_lg-3.4.0/en_core_web_lg-3.4.0.tar.gz"
+    "cdp-backend[pipeline]>=4.0.0",
 ]
 
 test_requirements = [
@@ -41,6 +37,7 @@ setup(
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
     ],
     description="Package containing the gather functions for Example.",
     install_requires=requirements,
