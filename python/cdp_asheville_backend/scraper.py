@@ -411,14 +411,12 @@ class AshevilleScraper(IngestionModelScraper):
 
         events = []
         try:
-            with urlopen(city_council_mettings_endpoint) as resp:
+            with urlopen(city_council_mettings_endpoint_url) as resp:
                 response = resp.read()
                 # data = response.json()
                 data = json.loads(response.decode("utf-8"))
 
                 for item in data:
-                    print(item["acf"])
-
                     events.append(
                         self.get_none_if_empty(
                             EventIngestionModel(
