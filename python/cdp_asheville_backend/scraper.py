@@ -272,9 +272,9 @@ class AshevilleScraper(IngestionModelScraper):
 
             processed_video_url = self.process_youtube_url(video_uri)
 
-            print("Processed video URL: " + processed_video_url)
 
             if processed_video_url is not None:
+                print("Processed video URL: " + processed_video_url)
                 # Note: It looks like the shortened URL video
                 # links cause a validation error when adding to firestore.
                 # Should open an issue on cdp-backend
