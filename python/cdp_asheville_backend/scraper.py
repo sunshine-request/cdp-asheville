@@ -272,7 +272,6 @@ class AshevilleScraper(IngestionModelScraper):
 
             processed_video_url = self.process_youtube_url(video_uri)
 
-
             if processed_video_url is not None:
                 print("Processed video URL: " + processed_video_url)
                 # Note: It looks like the shortened URL video
