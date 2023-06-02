@@ -9,8 +9,6 @@ from datetime import datetime
 # from cdp_backend.pipeline.ingestion_models import EventIngestionModel
 
 ###############################################################################
-from dateutil.rrule import rrule, MONTHLY
-
 import logging
 import json
 
@@ -37,7 +35,6 @@ from cdp_backend.pipeline.ingestion_models import (
 log = logging.getLogger(__name__)
 
 ###############################################################################
-import re
 
 # from typing import Any, List, NamedTuple, Optional, Union
 from typing import List, NamedTuple, Optional, Union
@@ -67,12 +64,13 @@ def load_web_page(url: Union[str, Request]) -> WebPageSoup:
 
     """
     try:
+        user_agent_string = "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) "
+        user_agent_string += "AppleWebKit/537.36 (KHTML, like Gecko) "
+        user_agent_string += "Chrome/35.0.1916.47 Safari/537.36"
         req = Request(
             url,
             data=None,
-            headers={
-                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36"
-            },
+            headers={"User-Agent": user_agent_string},
         )
         with urlopen(req) as resp:
             return WebPageSoup(True, BeautifulSoup(resp.read(), "html.parser"))
@@ -273,8 +271,9 @@ class AshevilleScraper(IngestionModelScraper):
             print("Processed video URL: " + processed_video_url)
 
             if processed_video_url is not None:
-                # Note: It looks like the shortened URL video links cause a validation error
-                # when adding to firestore. Should open an issue on cdp-backend
+                # Note: It looks like the shortened URL video
+                # links cause a validation error when adding to firestore.
+                # Should open an issue on cdp-backend
                 sessions.append(
                     self.get_none_if_empty(
                         Session(
@@ -394,7 +393,8 @@ class AshevilleScraper(IngestionModelScraper):
             or information for the meeting did not meet minimal CDP requirements.
         """
 
-        # Load JSON from REST ENDPOINT https://www.ashevillenc.gov/wp-json/wp/v2/meetings/
+        # Load JSON from REST ENDPOINT
+        # https://www.ashevillenc.gov/wp-json/wp/v2/meetings/
         city_council_mettings_endpoint = (
             "https://www.ashevillenc.gov/wp-json/wp/v2/meetings/"
         )
@@ -432,7 +432,7 @@ class AshevilleScraper(IngestionModelScraper):
                     )
 
         except URLError or HTTPError as e:
-            log.error(f"Failed to open {url}: {str(e)}")
+            log.error(f"Failed to open {city_council_mettings_endpoint}: {str(e)}")
 
         return events
 
