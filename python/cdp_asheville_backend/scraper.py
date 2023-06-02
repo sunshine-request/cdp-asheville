@@ -402,7 +402,7 @@ class AshevilleScraper(IngestionModelScraper):
         city_council_mettings_endpoint_url = city_council_mettings_endpoint
         city_council_mettings_endpoint_url += "?after=" + start_date_time.isoformat()
         city_council_mettings_endpoint_url += "&before=" + end_date_time.isoformat()
-        city_council_mettings_endpoint_url = city_council_mettings_endpoint.replace(
+        city_council_mettings_endpoint_url = city_council_mettings_endpoint_url.replace(
             "+00:00", ""
         )
 
