@@ -239,6 +239,7 @@ class AshevilleScraper(IngestionModelScraper):
 
             event_date_str = event_date_str.replace(",", ", ").replace(",", "")
             event_date_str = event_date_str.replace("  ", " ")
+            event_date_str = event_date_str.replace("Retreat", "")
 
             try:
                 event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(
