@@ -402,6 +402,9 @@ class AshevilleScraper(IngestionModelScraper):
         city_council_mettings_endpoint_url = city_council_mettings_endpoint
         city_council_mettings_endpoint_url += "?after=" + start_date_time.isoformat()
         city_council_mettings_endpoint_url += "&before=" + end_date_time.isoformat()
+        city_council_mettings_endpoint_url = city_council_mettings_endpoint.replace(
+            "+00:00", ""
+        )
 
         print("Get Council Meeting Materials: " + city_council_mettings_endpoint_url)
 
