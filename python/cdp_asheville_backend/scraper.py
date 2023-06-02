@@ -166,7 +166,10 @@ class AshevilleScraper(IngestionModelScraper):
         if input == "https://www.youtube.com/user/CityofAsheville/featured":
             return None
 
-        return input
+        if "youtube.com" in input:
+            return input
+        else:
+            return None
 
     def get_events_for_board(
         self,
