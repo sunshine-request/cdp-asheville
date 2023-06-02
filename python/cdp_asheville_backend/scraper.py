@@ -12,6 +12,7 @@ from datetime import datetime
 from dateutil.rrule import rrule, MONTHLY
 
 import logging
+import json
 
 from cdp_scrapers.scraper_utils import (
     IngestionModelScraper,
@@ -66,7 +67,14 @@ def load_web_page(url: Union[str, Request]) -> WebPageSoup:
 
     """
     try:
-        with urlopen(url) as resp:
+        req = Request(
+            url,
+            data=None,
+            headers={
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36"
+            },
+        )
+        with urlopen(req) as resp:
             return WebPageSoup(True, BeautifulSoup(resp.read(), "html.parser"))
     except URLError or HTTPError as e:
         log.error(f"Failed to open {url}: {str(e)}")
@@ -90,9 +98,7 @@ class AshevilleScraper(IngestionModelScraper):
             .replace("file/d/", "uc?export=download&id=")
         )
 
-    def get_sessions(
-        self, event_page: BeautifulSoup, event_date: datetime
-    ) -> Optional[List[Session]]:
+    def get_sessions_from_rest(self, item: dict) -> Optional[List[Session]]:
         """
         Parse meeting video URIs from event_page,
         return Session for each video found.
@@ -118,206 +124,51 @@ class AshevilleScraper(IngestionModelScraper):
         sessions: List[Session] = []
         session_index = 0
 
-        # Note: It looks like the shortened URL video links cause a validation error
-        # when adding to firestore. Should open an issue on cdp-backend
-        for session_video_link in event_page.find_all("a"):
-            processed_video_url = session_video_link["href"].replace(
-                "https://youtu.be/", "https://www.youtube.com/watch?v="
-            )
+        event_date_text = item["title"]["rendered"]
 
-            # PRC 02.2023 - More processing of URLs
-            processed_video_url = processed_video_url.replace(
-                "https://youtube.com/live/", "https://www.youtube.com/watch?v="
-            )
-            processed_video_url = processed_video_url.replace(
-                "https://www.youtube.com/live/", "https://www.youtube.com/watch?v="
-            )
+        # Parse date in format 'May 23, 2023'
+        event_date = datetime.strptime(event_date_text, "%B %d, %Y")
 
-            processed_video_url = processed_video_url.replace("?feature=share", "")
-
-            print("Processed video URL: " + processed_video_url)
-
-            if (
-                processed_video_url
-                == "https://www.youtube.com/user/CityofAsheville/featured"
-            ):
-                print("Bail, it's the City user page")
-                processed_video_url = False
-
-            caption_uri = self.get_captions(processed_video_url)
-
-            sessions.append(
-                self.get_none_if_empty(
-                    Session(
-                        session_datetime=self.localize_datetime(event_date),
-                        session_index=session_index,
-                        video_uri=processed_video_url,
-                        caption_uri=caption_uri,
+        for video in item["acf"]["meeting_videos"]:
+            if video["video_url"] is not None:
+                processed_video_url = self.process_youtube_url(video["video_url"])
+                sessions.append(
+                    self.get_none_if_empty(
+                        Session(
+                            session_datetime=self.localize_datetime(event_date),
+                            session_index=session_index,
+                            video_uri=processed_video_url,
+                            caption_uri=None,
+                        )
                     )
                 )
-            )
-
             session_index += 1
 
         return reduced_list(sessions)
 
-    def get_events_for_month_article(
-        self,
-        soup_article: BeautifulSoup,
-        start_date_time: datetime,
-        end_date_time: datetime,
-        month_date: datetime,
-    ) -> Optional[List[EventIngestionModel]]:
-        # print("Events for month")
+    def process_youtube_url(self, input: str) -> str:
+        input = input.replace(
+            "https://youtube.com/live/", "https://www.youtube.com/watch?v="
+        )
 
-        event_headers = soup_article.find_all("h4")
+        input = input.replace(
+            "https://www.youtube.com/live/", "https://www.youtube.com/watch?v="
+        )
 
-        events: List[EventIngestionModel] = []
+        input = input.replace("https://youtu.be/", "https://www.youtube.com/watch?v=")
 
-        for event_header in event_headers:
-            event_link_elm = event_header.find("a")
+        # https://www.youtube.com/embed/9giQGUCV9d0?modestbranding=1&hd=1&vq=hd720&rel=0&playsinline=1
+        input = input.replace("?modestbranding=1&hd=1&vq=hd720&rel=0&playsinline=1", "")
+        input = input.replace(
+            "https://www.youtube.com/embed/", "https://www.youtube.com/watch?v="
+        )
 
-            event_month_date = event_link_elm.text.strip()
+        input = input.replace("?feature=share", "")
 
-            event_date_str = event_month_date + " " + month_date.strftime("%Y")
-            # event_link = event_link_elm["href"]
-            # event_date_str = event_link.rsplit("/", 2)[-2]
-            # event_date_str = event_date_str.replace("-", " ").capitalize()
-            event_date = datetime.strptime(event_date_str, "%B %d %Y").replace(
-                tzinfo=pytz.UTC
-            )
-            # print(event_date_str)
-            # print(event_date)
+        if input == "https://www.youtube.com/user/CityofAsheville/featured":
+            return None
 
-            # If the event date is out of range, continue
-            if not (start_date_time < event_date < end_date_time):
-                continue
-
-            event_card = event_header.find_parent("div", attrs={"class": "card"})
-
-            video_header = event_card.find("h5", text=re.compile("Videos"))
-
-            video_container = video_header.find_parent(
-                "div", attrs={"class": "container"}
-            )
-
-            # video_links = video_container.find_all(
-            #     'a'
-            # )
-            # print(video_links)
-            # for video_link in video_links:
-            #     video_url = video_link["href"]
-            #     event_title = video_link["title"]
-
-            #     event_title += ": " +  event_date.strftime("%B %-d, %Y")
-
-            events.append(
-                self.get_none_if_empty(
-                    EventIngestionModel(
-                        agenda_uri=self.get_agenda_uri(event_card),
-                        body=Body(name="Asheville City Council"),
-                        # event_minutes_items=self.get_event_minutes(event_page.soup),
-                        # minutes_uri=None,
-                        minutes_uri=self.get_minutes_uri(event_card),
-                        sessions=self.get_sessions(video_container, event_date),
-                    )
-                )
-            )
-
-        return reduced_list(events)
-
-    def get_event(
-        self,
-        event_page: BeautifulSoup,
-        start_date_time: datetime,
-        end_date_time: datetime,
-    ) -> Optional[EventIngestionModel]:
-        """
-        Find the uri for the file containing the agenda for a Portland, OR city
-        council meeting
-
-        Parameters
-        ----------
-        event_page: BeautifulSoup
-            Web page for the meeting loaded as a bs4 object
-
-        Returns
-        -------
-        agenda_uri: Optional[str]
-            The uri for the file containing the meeting's agenda
-        """
-
-        # Get all months between start and end date
-        dates = [
-            dt for dt in rrule(MONTHLY, dtstart=start_date_time, until=end_date_time)
-        ]
-
-        events = []
-        for month_date in dates:
-            month_date_formatted = month_date.strftime("%B, %Y")
-            # print(month_date_formatted)
-
-            month_element = event_page.find("h3", text=re.compile(month_date_formatted))
-
-            if month_element is None:
-                continue
-
-            month_parent_element = month_element.find_parent("article")
-
-            new_events = self.get_events_for_month_article(
-                month_parent_element, start_date_time, end_date_time, month_date
-            )
-
-            if new_events is not None:
-                events += new_events
-
-        return events
-
-    def get_agenda_uri(self, event_page: BeautifulSoup) -> Optional[str]:
-        """
-        Find the uri for the file containing the agenda for a Portland, OR city
-        council meeting
-
-        Parameters
-        ----------
-        event_page: BeautifulSoup
-            Web page for the meeting loaded as a bs4 object
-
-        Returns
-        -------
-        agenda_uri: Optional[str]
-            The uri for the file containing the meeting's agenda
-        """
-        agenda_uri_element = event_page.find("a", text=re.compile("Action Agenda"))
-
-        if agenda_uri_element is not None:
-            return self.process_drive_link(
-                agenda_uri_element["href"].replace("?usp=sharing", "")
-            )
-        return None
-
-    def get_minutes_uri(self, event_page: BeautifulSoup) -> Optional[str]:
-        """
-        Find the uri for the file containing the agenda for a Portland, OR city
-        council meeting
-
-        Parameters
-        ----------
-        event_page: BeautifulSoup
-            Web page for the meeting loaded as a bs4 object
-
-        Returns
-        -------
-        agenda_uri: Optional[str]
-            The uri for the file containing the meeting's agenda
-        """
-        agenda_uri_element = event_page.find("a", text=re.compile("Minutes"))
-
-        if agenda_uri_element is not None:
-            return self.process_drive_link(
-                agenda_uri_element["href"].replace("?usp=sharing", "")
-            )
-        return None
+        return input
 
     def get_events_for_board(
         self,
@@ -407,55 +258,45 @@ class AshevilleScraper(IngestionModelScraper):
             sessions: List[Session] = []
             session_index = 0
 
-            processed_video_url = meeting_video_link["href"].replace(
-                "https://youtu.be/", "https://www.youtube.com/watch?v="
-            )
+            video_uri = meeting_video_link["href"]
 
-            # PRC 02.2023 - More processing of URLs
-            processed_video_url = processed_video_url.replace(
-                "https://youtube.com/live/", "https://www.youtube.com/watch?v="
-            )
-            processed_video_url = processed_video_url.replace(
-                "https://www.youtube.com/live/", "https://www.youtube.com/watch?v="
-            )
+            # video_uri contains("publicinput.com")
+            if "publicinput.com" in video_uri:
+                public_input_page = load_web_page(video_uri)
+                if public_input_page is not None:
+                    video_iframe = public_input_page.soup.find("iframe")
+                    if video_iframe is not None:
+                        video_uri = video_iframe["src"]
 
-            processed_video_url = processed_video_url.replace("?feature=share", "")
+            processed_video_url = self.process_youtube_url(video_uri)
 
             print("Processed video URL: " + processed_video_url)
 
-            if (
-                processed_video_url
-                == "https://www.youtube.com/user/CityofAsheville/featured"
-            ):
-                print("Bail, it's the City user page")
-                processed_video_url = False
-
-            caption_uri = self.get_captions(processed_video_url)
-
-            # Note: It looks like the shortened URL video links cause a validation error
-            # when adding to firestore. Should open an issue on cdp-backend
-            sessions.append(
-                self.get_none_if_empty(
-                    Session(
-                        session_datetime=self.localize_datetime(event_date),
-                        session_index=session_index,
-                        video_uri=processed_video_url,
-                        caption_uri=caption_uri,
+            if processed_video_url is not None:
+                # Note: It looks like the shortened URL video links cause a validation error
+                # when adding to firestore. Should open an issue on cdp-backend
+                sessions.append(
+                    self.get_none_if_empty(
+                        Session(
+                            session_datetime=self.localize_datetime(event_date),
+                            session_index=session_index,
+                            video_uri=processed_video_url,
+                            caption_uri=None,
+                        )
                     )
                 )
-            )
 
-            events.append(
-                self.get_none_if_empty(
-                    EventIngestionModel(
-                        agenda_uri=agenda_uri,
-                        body=Body(name=board_name),
-                        # event_minutes_items=self.get_event_minutes(event_page.soup),
-                        # minutes_uri=None,
-                        sessions=sessions,
+                events.append(
+                    self.get_none_if_empty(
+                        EventIngestionModel(
+                            agenda_uri=agenda_uri,
+                            body=Body(name=board_name),
+                            # event_minutes_items=self.get_event_minutes(event_page.soup),
+                            # minutes_uri=None,
+                            sessions=sessions,
+                        )
                     )
                 )
-            )
 
         return reduced_list(events)
 
@@ -483,7 +324,9 @@ class AshevilleScraper(IngestionModelScraper):
         # Get all months between start and end date
         events = []
 
-        board_table = event_page.find("tbody")
+        board_tables = event_page.find_all("tbody")
+
+        board_table = board_tables[1]
 
         board_rows = board_table.find_all("tr")
         # board_rows = [board_table.find('tr')]
@@ -533,7 +376,7 @@ class AshevilleScraper(IngestionModelScraper):
 
         return self.get_boards(event_page.soup, start_date_time, end_date_time)
 
-    def load_council_meeting_materials_page(
+    def load_council_meeting_materials_rest(
         self, start_date_time: datetime, end_date_time: datetime
     ) -> Optional[EventIngestionModel]:
         """
@@ -550,16 +393,48 @@ class AshevilleScraper(IngestionModelScraper):
             None if there was no meeting on event_time
             or information for the meeting did not meet minimal CDP requirements.
         """
-        # try to load https://www.portland.gov/council/agenda/yyyy/m/d
 
-        event_page = load_web_page(
-            "https://www.ashevillenc.gov/government/city-council-meeting-materials/"
+        # Load JSON from REST ENDPOINT https://www.ashevillenc.gov/wp-json/wp/v2/meetings/
+        city_council_mettings_endpoint = (
+            "https://www.ashevillenc.gov/wp-json/wp/v2/meetings/"
         )
 
-        if not event_page.status:
-            return None
+        city_council_mettings_endpoint_url = city_council_mettings_endpoint
+        city_council_mettings_endpoint_url += "?after=" + start_date_time.isoformat()
+        city_council_mettings_endpoint_url += "&before=" + end_date_time.isoformat()
 
-        return self.get_event(event_page.soup, start_date_time, end_date_time)
+        print("Get Council Meeting Materials: " + city_council_mettings_endpoint_url)
+
+        events = []
+        try:
+            with urlopen(city_council_mettings_endpoint) as resp:
+                response = resp.read()
+                # data = response.json()
+                data = json.loads(response.decode("utf-8"))
+
+                for item in data:
+                    print(item["acf"])
+
+                    events.append(
+                        self.get_none_if_empty(
+                            EventIngestionModel(
+                                body=Body(name="Asheville City Council"),
+                                agenda_uri=self.process_drive_link(
+                                    item["acf"]["meeting_agenda"]
+                                ),
+                                minutes_uri=self.process_drive_link(
+                                    item["acf"]["meeting_minutes"]
+                                ),
+                                # event_minutes_items=self.get_event_minutes(event_page.soup),
+                                sessions=self.get_sessions_from_rest(item),
+                            )
+                        )
+                    )
+
+        except URLError or HTTPError as e:
+            log.error(f"Failed to open {url}: {str(e)}")
+
+        return events
 
     def get_events(
         self,
@@ -596,7 +471,7 @@ class AshevilleScraper(IngestionModelScraper):
 
         # Your implementation here
         board_events = self.load_board_and_commission_page(start_date, end_date)
-        events = self.load_council_meeting_materials_page(start_date, end_date)
+        events = self.load_council_meeting_materials_rest(start_date, end_date)
 
         if board_events is not None:
             events += board_events
@@ -605,14 +480,6 @@ class AshevilleScraper(IngestionModelScraper):
 
         # print(events)
         return events
-
-    def get_captions(
-        self,
-        uri: str,
-        **kwargs,
-    ) -> Optional[str]:
-        print("Captions disabled")
-        return None
 
 
 def get_events(
@@ -654,12 +521,12 @@ def get_events(
 if __name__ == "__main__":
     # start_date_time = datetime(2022, 10, 1)
     # end_date_time = datetime(2021, 10, 4)
-    from_dt = "2021-09-26"
+    from_dt = "2023-05-01"
 
     start_date_time = datetime.fromisoformat(from_dt)
 
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
-    end_date_time = datetime.fromisoformat("2021-09-29")
+    end_date_time = datetime.fromisoformat("2023-05-31")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
