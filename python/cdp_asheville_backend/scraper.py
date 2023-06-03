@@ -11,6 +11,7 @@ from datetime import datetime
 ###############################################################################
 import logging
 import json
+from yt_dlp import YoutubeDL
 
 from cdp_scrapers.scraper_utils import (
     IngestionModelScraper,
@@ -122,25 +123,39 @@ class AshevilleScraper(IngestionModelScraper):
         sessions: List[Session] = []
         session_index = 0
 
-        event_date_text = item["title"]["rendered"]
-
-        # Parse date in format 'May 23, 2023'
-        event_date = datetime.strptime(event_date_text, "%B %d, %Y")
-
         for video in item["acf"]["meeting_videos"]:
             if video["video_url"] is not None:
                 processed_video_url = self.process_youtube_url(video["video_url"])
-                sessions.append(
-                    self.get_none_if_empty(
-                        Session(
-                            session_datetime=self.localize_datetime(event_date),
-                            session_index=session_index,
-                            video_uri=processed_video_url,
-                            caption_uri=None,
+
+                try:
+                    ydl_opts = {}
+                    with YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(processed_video_url, download=False)
+
+                        event_date_string = info["upload_date"]
+                        # parse date in format 20230518
+                        event_date = datetime.strptime(
+                            event_date_string, "%Y%m%d"
+                        ).replace(tzinfo=pytz.UTC)
+
+                        sessions.append(
+                            self.get_none_if_empty(
+                                Session(
+                                    session_datetime=self.localize_datetime(event_date),
+                                    session_index=session_index,
+                                    video_uri=processed_video_url,
+                                    caption_uri=None,
+                                )
+                            )
                         )
-                    )
-                )
-            session_index += 1
+                        session_index += 1
+
+                    # ydl_opts = {"outtmpl": str(dst), "format": "mp4"}
+                    # with YoutubeDL(ydl_opts) as ydl:
+                    #     ydl.download([uri])
+                    #     return str(dst)
+                except BaseException as e:
+                    log.error(f"Failed to open {processed_video_url}: {str(e)}")
 
         return reduced_list(sessions)
 
