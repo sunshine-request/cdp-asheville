@@ -109,3 +109,6 @@ ENV/
 
 # Secrets
 .keys/
+
+# For local dev
+python/google-creds.json
