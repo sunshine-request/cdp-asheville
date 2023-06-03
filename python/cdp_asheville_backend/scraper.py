@@ -132,28 +132,34 @@ class AshevilleScraper(IngestionModelScraper):
                     with YoutubeDL(ydl_opts) as ydl:
                         info = ydl.extract_info(processed_video_url, download=False)
 
-                        event_date_string = info["upload_date"]
-                        # parse date in format 20230518
-                        event_date = datetime.strptime(
-                            event_date_string, "%Y%m%d"
-                        ).replace(tzinfo=pytz.UTC)
+                        if info["release_timestamp"] is not None:
+                            event_release_timestamp = info["release_timestamp"]
+                            event_date = datetime.fromtimestamp(
+                                event_release_timestamp, pytz.timezone("UTC")
+                            )
 
-                        sessions.append(
-                            self.get_none_if_empty(
-                                Session(
-                                    session_datetime=self.localize_datetime(event_date),
-                                    session_index=session_index,
-                                    video_uri=processed_video_url,
-                                    caption_uri=None,
+                            # Alternative Approach
+                            # event_date_string = info["upload_date"]
+                            # parse date in format 20230518
+                            # event_date = datetime.strptime(
+                            # event_date_string, "%Y%m%d"
+                            # ).replace(tzinfo=pytz.UTC)
+
+                            sessions.append(
+                                self.get_none_if_empty(
+                                    Session(
+                                        session_datetime=self.localize_datetime(
+                                            event_date
+                                        ),
+                                        session_index=session_index,
+                                        video_uri=processed_video_url,
+                                        caption_uri=None,
+                                    )
                                 )
                             )
-                        )
-                        session_index += 1
 
-                    # ydl_opts = {"outtmpl": str(dst), "format": "mp4"}
-                    # with YoutubeDL(ydl_opts) as ydl:
-                    #     ydl.download([uri])
-                    #     return str(dst)
+                            session_index += 1
+
                 except BaseException as e:
                     log.error(f"Failed to open {processed_video_url}: {str(e)}")
 
@@ -177,6 +183,9 @@ class AshevilleScraper(IngestionModelScraper):
         )
 
         input = input.replace("?feature=share", "")
+
+        # Cut any text after & symbol
+        input = input.split("&")[0]
 
         if input == "https://www.youtube.com/user/CityofAsheville/featured":
             return None
@@ -289,31 +298,45 @@ class AshevilleScraper(IngestionModelScraper):
 
             if processed_video_url is not None:
                 print("Processed video URL: " + processed_video_url)
-                # Note: It looks like the shortened URL video
-                # links cause a validation error when adding to firestore.
-                # Should open an issue on cdp-backend
-                sessions.append(
-                    self.get_none_if_empty(
-                        Session(
-                            session_datetime=self.localize_datetime(event_date),
-                            session_index=session_index,
-                            video_uri=processed_video_url,
-                            caption_uri=None,
-                        )
-                    )
-                )
 
-                events.append(
-                    self.get_none_if_empty(
-                        EventIngestionModel(
-                            agenda_uri=agenda_uri,
-                            body=Body(name=board_name),
-                            # event_minutes_items=self.get_event_minutes(event_page.soup),
-                            # minutes_uri=None,
-                            sessions=sessions,
-                        )
-                    )
-                )
+                try:
+                    ydl_opts = {}
+                    with YoutubeDL(ydl_opts) as ydl:
+                        info = ydl.extract_info(processed_video_url, download=False)
+
+                        if info["release_timestamp"] is not None:
+                            event_release_timestamp = info["release_timestamp"]
+                            event_date = datetime.fromtimestamp(
+                                event_release_timestamp, pytz.timezone("UTC")
+                            )
+
+                            sessions.append(
+                                self.get_none_if_empty(
+                                    Session(
+                                        session_datetime=self.localize_datetime(
+                                            event_date
+                                        ),
+                                        session_index=session_index,
+                                        video_uri=processed_video_url,
+                                        caption_uri=None,
+                                    )
+                                )
+                            )
+
+                            events.append(
+                                self.get_none_if_empty(
+                                    EventIngestionModel(
+                                        agenda_uri=agenda_uri,
+                                        body=Body(name=board_name),
+                                        # event_minutes_items=self.get_event_minutes(event_page.soup),
+                                        # minutes_uri=None,
+                                        sessions=sessions,
+                                    )
+                                )
+                            )
+
+                except BaseException as e:
+                    log.error(f"Failed to open {processed_video_url}: {str(e)}")
 
         return reduced_list(events)
 
