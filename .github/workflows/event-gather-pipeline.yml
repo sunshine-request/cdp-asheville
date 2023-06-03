@@ -29,24 +29,19 @@ jobs:
       - name: Setup CML
         uses: iterative/setup-cml@v1
       - name: Create Runner
-        uses: nick-fields/retry@v2
         env:
-          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_CREDENTIALS }}
-        with:
-          timeout_minutes: 15
-          max_attempts: 4
-          retry_wait_seconds: 600
-          command: |
-            cml runner \
-              --single \
-              --labels=gcp-cdp-runner \
-              --cloud=gcp \
-              --cloud-region=us-central1-f \
-              --cloud-type=n1-standard-4 \
-              --cloud-gpu=nvidia-tesla-t4 \
-              --cloud-hdd-size=30 \
-              --idle-timeout=600 \
+          REPO_TOKEN: {% raw %}${{ secrets.PERSONAL_ACCESS_TOKEN }}{% endraw %}
+          GOOGLE_APPLICATION_CREDENTIALS_DATA: {% raw %}${{ secrets.GOOGLE_CREDENTIALS }}{% endraw %}
+        run: |
+          cml runner \
+            --single \
+            --labels=gcp-cdp-runner \
+            --cloud=gcp \
+            --cloud-region=us-central1-f \
+            --cloud-type=n1-standard-4 \
+            --cloud-gpu=nvidia-tesla-t4 \
+            --cloud-hdd-size=30 \
+            --idle-timeout=600
 
   process-events:
     needs: [deploy-runner-on-gcp]
