@@ -11,7 +11,7 @@ from datetime import datetime
 ###############################################################################
 import logging
 import json
-from yt_dlp import YoutubeDL
+from yt_dlp import YoutubeDL, DateRange
 
 from cdp_scrapers.scraper_utils import (
     IngestionModelScraper,
@@ -443,6 +443,102 @@ class AshevilleScraper(IngestionModelScraper):
 
         return self.get_boards(event_page.soup, start_date_time, end_date_time)
 
+    def filter_upcoming_events(info, *, incomplete):
+        """Download only videos longer than a minute (or with unknown duration)"""
+        live_status = info.get("live_status")
+        # print(live_status)
+        if live_status == "is_upcoming":
+            return "The video is is_upcoming"
+
+    def get_events_from_youtube_channel(
+        self,
+        start_date_time: datetime,
+        end_date_time: datetime,
+    ) -> Optional[List[EventIngestionModel]]:
+        print("Load YouTube Channel")
+
+        # url = "https://www.youtube.com/@CityofAsheville/streams"
+        url = (
+            "https://www.youtube.com/@CityofAsheville/search?query=before%3A"
+            + end_date_time.strftime("%Y-%m-%d")
+        )
+        url += "%20%2Bafter%3A" + start_date_time.strftime("%Y-%m-%d")
+        url += "%20%2Blive"
+
+        # Create DateRange with start and end date in format YYYYMMDD
+        daterange = DateRange(
+            start_date_time.strftime("%Y%m%d"), end_date_time.strftime("%Y%m%d")
+        )
+
+        ydl_opts = {
+            "match_filter": self.filter_upcoming_events,
+            "daterange": daterange
+            # 'date_before' : end_date_time,
+            # 'date_after' : start_date_time,
+        }
+
+        with YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=False)
+            # print("Found Video")
+            # print(info)
+            return info
+
+    def get_board_events_from_youtube(
+        self,
+        start_date_time: datetime,
+        end_date_time: datetime,
+    ) -> Optional[List[EventIngestionModel]]:
+        events = []
+
+        youtube_data = self.get_events_from_youtube_channel(
+            start_date_time, end_date_time
+        )
+
+        for video in youtube_data["entries"]:
+            sessions: List[Session] = []
+            session_index = 0
+
+            title = video["title"]
+
+            board_name = title.split("–")[0].strip()
+
+            processed_video_url = video["original_url"]
+
+            if "City Council" in board_name:
+                # print("City Council FOUND")
+                continue
+
+            if video["release_timestamp"] is not None:
+                event_release_timestamp = video["release_timestamp"]
+                event_date = datetime.fromtimestamp(
+                    event_release_timestamp, pytz.timezone("UTC")
+                )
+
+                sessions.append(
+                    self.get_none_if_empty(
+                        Session(
+                            session_datetime=self.localize_datetime(event_date),
+                            session_index=session_index,
+                            video_uri=processed_video_url,
+                            caption_uri=None,
+                        )
+                    )
+                )
+
+                events.append(
+                    self.get_none_if_empty(
+                        EventIngestionModel(
+                            # agenda_uri=agenda_uri,
+                            body=Body(name=board_name),
+                            # event_minutes_items=self.get_event_minutes(event_page.soup),
+                            # minutes_uri=None,
+                            sessions=sessions,
+                        )
+                    )
+                )
+
+        return events
+
     def load_council_meeting_materials_rest(
         self, start_date_time: datetime, end_date_time: datetime
     ) -> Optional[EventIngestionModel]:
@@ -525,7 +621,8 @@ class AshevilleScraper(IngestionModelScraper):
         end_date = to_dt.replace(tzinfo=pytz.UTC)
 
         # Your implementation here
-        board_events = self.load_board_and_commission_page(start_date, end_date)
+        # board_events = self.load_board_and_commission_page(start_date, end_date)
+        board_events = self.get_board_events_from_youtube(start_date, end_date)
         events = self.load_council_meeting_materials_rest(start_date, end_date)
 
         if board_events is not None:
@@ -587,5 +684,6 @@ if __name__ == "__main__":
     # end_date_time = datetime(2021, 9, 29)
 
     scraper = AshevilleScraper()
+
     asheville_events = scraper.get_events(start_date_time, end_date_time)
     print(asheville_events)
