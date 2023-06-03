@@ -30,8 +30,8 @@ jobs:
         uses: iterative/setup-cml@v1
       - name: Create Runner
         env:
-          REPO_TOKEN: {% raw %}${{ secrets.PERSONAL_ACCESS_TOKEN }}{% endraw %}
-          GOOGLE_APPLICATION_CREDENTIALS_DATA: {% raw %}${{ secrets.GOOGLE_CREDENTIALS }}{% endraw %}
+          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+          GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_CREDENTIALS }}
         run: |
           cml runner \
             --single \
@@ -55,7 +55,7 @@ jobs:
     - uses: actions/setup-python@v4
       with:
         python-version: '3.11'
-
+    
     - name: Check GPU Drivers
       run: |
         nvidia-smi
@@ -92,7 +92,7 @@ jobs:
       run: |
         cd python/
         run_cdp_event_gather event-gather-config.json
-
+    
     - name: Gather and Process Requested Events - Manual
       if: ${{ github.event_name == 'workflow_dispatch' }}
       run: |
