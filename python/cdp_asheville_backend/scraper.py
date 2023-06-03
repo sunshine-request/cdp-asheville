@@ -97,7 +97,7 @@ class AshevilleScraper(IngestionModelScraper):
             .replace("file/d/", "uc?export=download&id=")
         )
 
-    def get_sessions_from_rest(self, item: dict) -> Optional[List[Session]]:
+    def get_council_meeting_events(self, item: dict) -> Optional[List[Session]]:
         """
         Parse meeting video URIs from event_page,
         return Session for each video found.
@@ -119,13 +119,15 @@ class AshevilleScraper(IngestionModelScraper):
         # <time class="datetime">Wednesday, December 15, 2021 9:30 am</time>
         # ...
         # <iframe src="https://www.youtube.com/...">
-
-        sessions: List[Session] = []
-        session_index = 0
+        events = []
 
         for video in item["acf"]["meeting_videos"]:
+            sessions: List[Session] = []
+            session_index = 0
+
             if video["video_url"] is not None:
                 processed_video_url = self.process_youtube_url(video["video_url"])
+                video_label = video["video_label"]
 
                 try:
                     ydl_opts = {}
@@ -158,12 +160,37 @@ class AshevilleScraper(IngestionModelScraper):
                                 )
                             )
 
-                            session_index += 1
+                            body_name = "Asheville City Council: "
+                            body_name += video_label
+
+                            agenda_url = None
+                            minutes_url = item["acf"]["meeting_minutes"]
+
+                            if video_label == "City Council Meeting":
+                                agenda_url = item["acf"]["meeting_agenda"]
+                            elif video_label == "Agenda Briefing":
+                                agenda_url = item["acf"]["meeting_agenda_briefing"]
+
+                            events.append(
+                                self.get_none_if_empty(
+                                    EventIngestionModel(
+                                        body=Body(name=body_name),
+                                        agenda_uri=self.process_drive_link(agenda_url),
+                                        minutes_uri=self.process_drive_link(
+                                            minutes_url
+                                        ),
+                                        # event_minutes_items=self.get_event_minutes(event_page.soup),
+                                        sessions=sessions,
+                                    )
+                                )
+                            )
+
+                            # session_index += 1
 
                 except BaseException as e:
                     log.error(f"Failed to open {processed_video_url}: {str(e)}")
 
-        return reduced_list(sessions)
+        return reduced_list(events)
 
     def process_youtube_url(self, input: str) -> str:
         input = input.replace(
@@ -457,21 +484,7 @@ class AshevilleScraper(IngestionModelScraper):
                 data = json.loads(response.decode("utf-8"))
 
                 for item in data:
-                    events.append(
-                        self.get_none_if_empty(
-                            EventIngestionModel(
-                                body=Body(name="Asheville City Council"),
-                                agenda_uri=self.process_drive_link(
-                                    item["acf"]["meeting_agenda"]
-                                ),
-                                minutes_uri=self.process_drive_link(
-                                    item["acf"]["meeting_minutes"]
-                                ),
-                                # event_minutes_items=self.get_event_minutes(event_page.soup),
-                                sessions=self.get_sessions_from_rest(item),
-                            )
-                        )
-                    )
+                    events += self.get_council_meeting_events(item)
 
         except URLError or HTTPError as e:
             log.error(f"Failed to open {city_council_mettings_endpoint}: {str(e)}")
