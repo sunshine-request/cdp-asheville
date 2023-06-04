@@ -564,8 +564,8 @@ class AshevilleScraper(IngestionModelScraper):
         )
 
         city_council_mettings_endpoint_url = city_council_mettings_endpoint
-        city_council_mettings_endpoint_url += "?after=" + start_date_time.isoformat()
-        city_council_mettings_endpoint_url += "&before=" + end_date_time.isoformat()
+        city_council_mettings_endpoint_url += "?modified_after=" + start_date_time.isoformat()
+        city_council_mettings_endpoint_url += "&modified_before=" + end_date_time.isoformat()
         city_council_mettings_endpoint_url = city_council_mettings_endpoint_url.replace(
             "+00:00", ""
         )
@@ -673,12 +673,12 @@ def get_events(
 if __name__ == "__main__":
     # start_date_time = datetime(2022, 10, 1)
     # end_date_time = datetime(2021, 10, 4)
-    from_dt = "2023-05-01"
+    from_dt = "2023-05-24"
 
     start_date_time = datetime.fromisoformat(from_dt)
 
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
-    end_date_time = datetime.fromisoformat("2023-05-31")
+    end_date_time = datetime.fromisoformat("2023-06-05")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
