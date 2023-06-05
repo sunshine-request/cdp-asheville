@@ -585,7 +585,9 @@ class AshevilleScraper(IngestionModelScraper):
 
                 if data is not None:
                     for item in data:
-                        events += self.get_council_meeting_events(item)
+                        council_events = self.get_council_meeting_events(item)
+                        if council_events is not None:
+                            events += council_events
 
         except URLError or HTTPError as e:
             log.error(f"Failed to open {city_council_mettings_endpoint}: {str(e)}")
