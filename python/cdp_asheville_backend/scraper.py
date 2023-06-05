@@ -171,14 +171,18 @@ class AshevilleScraper(IngestionModelScraper):
                             elif video_label == "Agenda Briefing":
                                 agenda_url = item["acf"]["meeting_agenda_briefing"]
 
+                            if agenda_url is not None:
+                                agenda_url = self.process_drive_link(agenda_url)
+
+                            if minutes_url is not None:
+                                minutes_url = self.process_drive_link(minutes_url)
+
                             events.append(
                                 self.get_none_if_empty(
                                     EventIngestionModel(
                                         body=Body(name=body_name),
-                                        agenda_uri=self.process_drive_link(agenda_url),
-                                        minutes_uri=self.process_drive_link(
-                                            minutes_url
-                                        ),
+                                        agenda_uri=agenda_url,
+                                        minutes_uri=minutes_url,
                                         # event_minutes_items=self.get_event_minutes(event_page.soup),
                                         sessions=sessions,
                                     )
@@ -680,12 +684,12 @@ def get_events(
 if __name__ == "__main__":
     # start_date_time = datetime(2022, 10, 1)
     # end_date_time = datetime(2021, 10, 4)
-    from_dt = "2023-03-08"
+    from_dt = "2023-04-08"
 
     start_date_time = datetime.fromisoformat(from_dt)
 
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
-    end_date_time = datetime.fromisoformat("2023-03-16")
+    end_date_time = datetime.fromisoformat("2023-04-27")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
