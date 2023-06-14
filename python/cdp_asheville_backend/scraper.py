@@ -508,9 +508,9 @@ class AshevilleScraper(IngestionModelScraper):
 
             processed_video_url = video["original_url"]
 
-            if "City Council" in board_name:
+            # if "City Council" in board_name:
                 # print("City Council FOUND")
-                continue
+                # continue
 
             if video["release_timestamp"] is not None:
                 event_release_timestamp = video["release_timestamp"]
