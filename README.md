@@ -7,6 +7,7 @@
 [![Repo Build Status](https://github.com/sunshine-request/cdp-asheville/workflows/Build%20Main/badge.svg)](https://github.com/sunshine-request/cdp-asheville/actions?query=workflow%3A%22Build+Main%22)
 
 ---
+
 ## Council Data Project
 
 Council Data Project is an open-source project dedicated to providing journalists, activists, researchers, and all members of each community we serve with the tools they need to stay informed and hold their Council Members accountable.
