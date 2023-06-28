@@ -3,7 +3,7 @@
 [![Infrastructure Deployment Status](https://github.com/sunshine-request/cdp-asheville/workflows/Infrastructure/badge.svg)](https://github.com/sunshine-request/cdp-asheville/actions?query=workflow%3A%22Infrastructure%22)
 [![Event Processing Pipeline](https://github.com/sunshine-request/cdp-asheville/workflows/Event%20Gather/badge.svg)](https://github.com/sunshine-request/cdp-asheville/actions?query=workflow%3A%22Event+Gather%22)
 [![Event Index Pipeline](https://github.com/sunshine-request/cdp-asheville/workflows/Event%20Index/badge.svg)](https://github.com/sunshine-request/cdp-asheville/actions?query=workflow%3A%22Event+Index%22)
-[![Web Deployment Status](https://github.com/sunshine-request/cdp-asheville/workflows/Web%20App/badge.svg)](https://sunshine-request.github.io/cdp-asheville)
+[![Web Deployment Status](https://github.com/sunshine-request/cdp-asheville/workflows/Web%20App/badge.svg)](https://avlcdp.com)
 [![Repo Build Status](https://github.com/sunshine-request/cdp-asheville/workflows/Build%20Main/badge.svg)](https://github.com/sunshine-request/cdp-asheville/actions?query=workflow%3A%22Build+Main%22)
 
 ---

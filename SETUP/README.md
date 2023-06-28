@@ -202,7 +202,7 @@ There are additional tasks required after generating this repository.
     You will need to wait until the quota increase has been approved before running any
     event processing. From our experience, the quota is approved within 15 minutes.
 
-**If all steps complete successful your web application will be viewable at: https://sunshine-request.github.io/cdp-asheville**
+**If all steps complete successful your web application will be viewable at: https://avlcdp.com**
 
 ## Data Gathering Setup
 

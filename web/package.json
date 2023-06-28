@@ -1,7 +1,7 @@
 {
     "name": "cdp-asheville",
     "version": "1.0.0",
-    "homepage": "https://sunshine-request.github.io/cdp-asheville",
+    "homepage": "https://avlcdp.com",
     "license": "MIT",
     "scripts": {
         "start": "react-scripts start",
@@ -10,7 +10,7 @@
         "deploy": "gh-pages -d build"
     },
     "dependencies": {
-        "@councildataproject/cdp-frontend": "3.3.0",
+        "@councildataproject/cdp-frontend": "3.2.3",
         "react": "^16.13.1",
         "react-dom": "^16.13.1"
     },
