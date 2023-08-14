@@ -476,7 +476,8 @@ class AshevilleScraper(IngestionModelScraper):
 
         ydl_opts = {
             "match_filter": self.filter_upcoming_events,
-            "daterange": daterange
+            "daterange": daterange,
+            "ignoreerrors": True
             # 'date_before' : end_date_time,
             # 'date_after' : start_date_time,
         }
@@ -503,6 +504,9 @@ class AshevilleScraper(IngestionModelScraper):
             session_index = 0
 
             # PRC 08.2203
+            if video is None:
+                continue
+
             # TODO: Check video["live_status"]
 
             title = video["title"]
@@ -687,12 +691,12 @@ def get_events(
 if __name__ == "__main__":
     # start_date_time = datetime(2022, 10, 1)
     # end_date_time = datetime(2021, 10, 4)
-    from_dt = "2023-07-25"
+    from_dt = "2023-07-29"
 
     start_date_time = datetime.fromisoformat(from_dt)
 
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
-    end_date_time = datetime.fromisoformat("2023-07-30")
+    end_date_time = datetime.fromisoformat("2023-08-13")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
