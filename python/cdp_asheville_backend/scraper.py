@@ -467,7 +467,7 @@ class AshevilleScraper(IngestionModelScraper):
             + end_date_time.strftime("%Y-%m-%d")
         )
         url += "%20%2Bafter%3A" + start_date_time.strftime("%Y-%m-%d")
-        url += "%20%2Blive"
+        # url += "%20%2Blive"
 
         # Create DateRange with start and end date in format YYYYMMDD
         daterange = DateRange(
@@ -501,6 +501,9 @@ class AshevilleScraper(IngestionModelScraper):
         for video in youtube_data["entries"]:
             sessions: List[Session] = []
             session_index = 0
+
+            # PRC 08.2203
+            # TODO: Check video["live_status"]
 
             title = video["title"]
 
@@ -684,12 +687,12 @@ def get_events(
 if __name__ == "__main__":
     # start_date_time = datetime(2022, 10, 1)
     # end_date_time = datetime(2021, 10, 4)
-    from_dt = "2023-04-08"
+    from_dt = "2023-07-25"
 
     start_date_time = datetime.fromisoformat(from_dt)
 
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
-    end_date_time = datetime.fromisoformat("2023-04-27")
+    end_date_time = datetime.fromisoformat("2023-07-30")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
