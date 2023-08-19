@@ -121,6 +121,12 @@ class AshevilleScraper(IngestionModelScraper):
         # <iframe src="https://www.youtube.com/...">
         events = []
 
+        if item["acf"] is None:
+            return events
+
+        if item["acf"]["meeting_videos"] is None:
+            return events
+
         for video in item["acf"]["meeting_videos"]:
             sessions: List[Session] = []
             session_index = 0
@@ -696,7 +702,7 @@ if __name__ == "__main__":
     start_date_time = datetime.fromisoformat(from_dt)
 
     # start_date_time = datetime.fromisoformat("2021-09-26T02:44:36+0000")
-    end_date_time = datetime.fromisoformat("2023-08-13")
+    end_date_time = datetime.fromisoformat("2023-08-19")
 
     # start_date_time = datetime(2021, 9, 26)
     # end_date_time = datetime(2021, 9, 29)
