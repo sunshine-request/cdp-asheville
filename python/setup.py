@@ -8,7 +8,8 @@ from setuptools import find_packages, setup
 requirements = [
     "cdp-scrapers[portland]>=0.4.0",
     "cdp-backend[pipeline]==4.1.2",
-    "spacy-transformers"
+    "spacy-transformers",
+    "en_core_web_trf @ https://github.com/explosion/spacy-models/releases/download/en_core_web_trf-3.7.2/en_core_web_trf-3.7.2-py3-none-any.whl"
 ]
 
 test_requirements = [
