@@ -10,7 +10,7 @@
         "deploy": "gh-pages -d build"
     },
     "dependencies": {
-        "@councildataproject/cdp-frontend": "github:sunshine-request/cdp-frontend",
+        "@sunshine-request/cdp-frontend": "^3.3.0",
         "react": "^16.13.1",
         "react-dom": "^16.13.1"
     },
