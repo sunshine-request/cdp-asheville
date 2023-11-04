@@ -10,7 +10,7 @@
         "deploy": "gh-pages -d build"
     },
     "dependencies": {
-        "@sunshine-request/cdp-frontend": "^3.3.0",
+        "@sunshine-request/cdp-frontend": "^3.3.1",
         "react": "^16.13.1",
         "react-dom": "^16.13.1"
     },
