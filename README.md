@@ -15,7 +15,7 @@ Council Data Project is an open-source project dedicated to providing journalist
 For more information about Council Data Project, please visit [our website](https://councildataproject.org/).
 
 ## Instance Information
-
+ 
 This repo serves the municipality: **Asheville**
 
 ### Python Access
