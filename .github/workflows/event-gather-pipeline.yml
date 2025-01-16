@@ -29,10 +29,6 @@ jobs:
       - name: Setup CML
         uses: iterative/setup-cml@v1
       - name: Create Runner
-        env:
-          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_CREDENTIALS }}
-
   process-events:
     needs: [deploy-runner-on-gcp]
     runs-on: [self-hosted, sunshine-gpu]
