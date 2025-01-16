@@ -1,4 +1,4 @@
-name: Event Gather
+name: Event Gather GitHub GPU
 
 on:
   schedule:
@@ -22,30 +22,8 @@ permissions:
   pull-requests: write
 
 jobs:
-  deploy-runner-on-gcp:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup CML
-        uses: iterative/setup-cml@v1
-      - name: Create Runner
-        env:
-          REPO_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
-          GOOGLE_APPLICATION_CREDENTIALS_DATA: ${{ secrets.GOOGLE_CREDENTIALS }}
-        run: |
-          cml runner \
-            --single \
-            --labels=gcp-cdp-runner \
-            --cloud=gcp \
-            --cloud-region=us-central1-f \
-            --cloud-type=n1-standard-4 \
-            --cloud-gpu=nvidia-tesla-t4 \
-            --cloud-hdd-size=30 \
-            --idle-timeout=600
-
   process-events:
-    needs: [deploy-runner-on-gcp]
-    runs-on: [self-hosted, gcp-cdp-runner]
+    runs-on: [sunshine-gpu]
     container:
       image: ghcr.io/iterative/cml:0-dvc2-base1-gpu
       options: --gpus all
