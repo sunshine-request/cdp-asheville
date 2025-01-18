@@ -1,10 +1,6 @@
 name: Event Gather GitHub GPU
 
 on:
-  schedule:
-    # <minute [0,59]> <hour [0,23]> <day of the month [1,31]> <month of the year [1,12]> <day of the week [0,6]>
-    # https://pubs.opengroup.org/onlinepubs/9699919799/utilities/crontab.html#tag_20_25_07
-    - cron: '26 6 * * *'
   workflow_dispatch:
     inputs:
       from:
